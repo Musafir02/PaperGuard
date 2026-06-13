@@ -9,6 +9,8 @@ export default function TranslatorShieldPage() {
   const [deviceId, setDeviceId] = useState("");
   const [issued, setIssued] = useState<{ translator_id: string; section: string; expires_at: string }[]>([]);
   const [verifyResult, setVerifyResult] = useState<{ authorized: boolean; reason?: string; section?: string } | null>(null);
+  const [reconstructedKey, setReconstructedKey] = useState<string | null>(null);
+  const [reconstructError, setReconstructError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const SECTIONS = ["Physics", "Chemistry", "Biology"];
@@ -38,6 +40,20 @@ export default function TranslatorShieldPage() {
       setVerifyResult(res);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const reconstruct = async () => {
+    setLoading(true);
+    setReconstructedKey(null);
+    setReconstructError(null);
+    try {
+      const res = await api.combineShards();
+      setReconstructedKey(res.reconstructed_key_hex);
+    } catch (e: any) {
+      setReconstructError(e.message || "Failed to reconstruct key");
     } finally {
       setLoading(false);
     }
@@ -101,23 +117,48 @@ export default function TranslatorShieldPage() {
             </div>
           )}
 
-          <div className="bg-bg-card border border-border rounded-xl p-5">
-            <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Issued Shards</p>
-            {issued.length === 0 ? (
-              <p className="text-[12px] text-text-muted">No shards issued yet</p>
-            ) : (
-              <div className="space-y-2">
-                {issued.map((s, i) => (
-                  <div key={i} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-[12px] text-accent">{s.translator_id}</span>
-                      <span className="text-[12px] text-text-secondary">{s.section}</span>
+          <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+            <div>
+              <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Issued Shards</p>
+              {issued.length === 0 ? (
+                <p className="text-[12px] text-text-muted">No shards issued yet</p>
+              ) : (
+                <div className="space-y-2">
+                  {issued.map((s, i) => (
+                    <div key={i} className="flex items-center justify-between py-2 border-b border-border/30 last:border-0">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-[12px] text-accent">{s.translator_id}</span>
+                        <span className="text-[12px] text-text-secondary">{s.section}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-text-muted">
+                        expires {new Date(s.expires_at).toLocaleTimeString()}
+                      </span>
                     </div>
-                    <span className="text-[10px] font-mono text-text-muted">
-                      expires {new Date(s.expires_at).toLocaleTimeString()}
-                    </span>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-border pt-4">
+              <button
+                onClick={reconstruct}
+                disabled={loading}
+                className="w-full px-4 py-2 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-40"
+              >
+                Reconstruct Master Key
+              </button>
+            </div>
+
+            {reconstructedKey && (
+              <div className="bg-green-dim border border-green/20 rounded-xl p-4 space-y-1">
+                <p className="text-[11px] font-medium text-green uppercase tracking-wider">Key Reconstructed (2-of-3 Quorum)</p>
+                <p className="font-mono text-[12px] text-text-primary break-all">{reconstructedKey}</p>
+              </div>
+            )}
+
+            {reconstructError && (
+              <div className="bg-red-dim border border-red/20 rounded-xl p-4">
+                <p className="text-[12px] text-red font-medium">{reconstructError}</p>
               </div>
             )}
           </div>
