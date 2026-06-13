@@ -1,22 +1,17 @@
 {
-  "builds": [
-    {
-      "src": "ops-webapp/package.json",
-      "use": "@vercel/next"
-    },
-    {
-      "src": "backend/app/main.py",
-      "use": "@vercel/python"
+  "functions": {
+    "api/index.py": {
+      "excludeFiles": "ops-webapp/**|backend/uploads/**|uploads/**|*.png|*.pdf|*.jpg"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "backend/app/main.py"
+      "source": "/api/:path*",
+      "destination": "api/index.py"
     },
     {
-      "src": "/(.*)",
-      "dest": "ops-webapp/$1"
+      "source": "/:path*",
+      "destination": "/ops-webapp/:path*"
     }
   ]
 }

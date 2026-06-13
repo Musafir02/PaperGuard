@@ -1,6 +1,5 @@
 import os
 import base64
-import json
 import httpx
 from PIL import Image, ImageDraw, ImageFont
 
@@ -23,11 +22,11 @@ EXAM_LABELS = {
     "Hindi": {"title": "NEET 2025 (UG)", "set_label": "सेट", "name_label": "नाम", "roll_label": "रोल नंबर", "seat_label": "सीट"},
     "English": {"title": "NEET 2025 (UG)", "set_label": "Set", "name_label": "Name", "roll_label": "Roll", "seat_label": "Seat"},
     "Tamil": {"title": "NEET 2025 (UG)", "set_label": "தொகுப்பு", "name_label": "பெயர்", "roll_label": "எண்", "seat_label": "இடம்"},
-    "Telugu": {"title": "NEET 2025 (UG)", "set_label": "సెట్", "name_label": "పేరు", "roll_label": "రోల్ నం", "seat_label": "సీటు"},
+    "Telugu": {"title": "NEET 2025 (UG)", "set_label": "సెట్", "name_label": "పేరు", "roll_label": "रोल नं", "seat_label": "సీటు"},
     "Bengali": {"title": "NEET 2025 (UG)", "set_label": "সেট", "name_label": "নাম", "roll_label": "রোল", "seat_label": "সিট"},
     "Marathi": {"title": "NEET 2025 (UG)", "set_label": "सेट", "name_label": "नाव", "roll_label": "रोल नं", "seat_label": "बस्ता"},
-    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નામ", "roll_label": "રોલ", "seat_label": "સીਟ"},
-    "Kannada": {"title": "NEET 2025 (UG)", "set_label": "ಸೆಟ್", "name_label": "ಹೆಸರು", "roll_label": "ರೋಲ್", "seat_label": "ಸೀಟ್"},
+    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નામ", "roll_label": "રોલ", "seat_label": "સીટ"},
+    "Kannada": {"title": "NEET 2025 (UG)", "set_label": "ಹೆಸರು", "name_label": "ಹೆಸರು", "roll_label": "ರೋಲ್", "seat_label": "ಸೀಟ್"},
     "Malayalam": {"title": "NEET 2025 (UG)", "set_label": "സെറ്റ്", "name_label": "പേര്", "roll_label": "റോൾ", "seat_label": "സീറ്റ്"},
     "Odia": {"title": "NEET 2025 (UG)", "set_label": "ସେଟ୍", "name_label": "ନାମ", "roll_label": "ରୋଲ୍", "seat_label": "ସିଟ୍"},
     "Punjabi": {"title": "NEET 2025 (UG)", "set_label": "ਸੈੱਟ", "name_label": "ਨਾਮ", "roll_label": "ਰੋਲ", "seat_label": "ਸੀਟ"},

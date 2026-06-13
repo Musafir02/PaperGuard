@@ -8,7 +8,6 @@ BLACKSPOTS = [
 
 PAST_LEAK_STATES = {"Rajasthan": 3, "Bihar": 2, "Maharashtra": 2, "Uttar Pradesh": 2}
 
-
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     R = 6371
     dlat = math.radians(lat2 - lat1)
@@ -20,7 +19,6 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
         * math.sin(dlon / 2) ** 2
     )
     return R * 2 * math.asin(math.sqrt(a))
-
 
 def calculate_risk_score(
     state: str,

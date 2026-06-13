@@ -1,6 +1,13 @@
 from PIL import Image
 import numpy as np
-from scipy.fftpack import dct, idct
+
+C = np.zeros((8, 8))
+for i in range(8):
+    for j in range(8):
+        if i == 0:
+            C[i, j] = 1.0 / np.sqrt(8.0)
+        else:
+            C[i, j] = np.sqrt(2.0 / 8.0) * np.cos((2 * j + 1) * i * np.pi / 16.0)
 
 def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) -> str:
     img = Image.open(image_path).convert("RGB")
@@ -20,7 +27,7 @@ def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) 
                 break
 
             block = img_array[i:i+block_size, j:j+block_size, 1]
-            dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
+            dct_block = C @ block @ C.T
 
             dc = dct_block[0, 0]
             bit = bits[bit_idx]
@@ -33,7 +40,7 @@ def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) 
                     q_coeff += 1
             dct_block[0, 0] = q_coeff * Q
 
-            reconstructed = idct(idct(dct_block.T, norm="ortho").T, norm="ortho")
+            reconstructed = C.T @ dct_block @ C
             img_array[i:i+block_size, j:j+block_size, 1] = np.clip(reconstructed, 0, 255)
             bit_idx += 1
 
@@ -59,7 +66,7 @@ def decode_watermark_dct(image_path: str, max_bits: int = 512) -> str:
                 break
 
             block = img_array[i:i+block_size, j:j+block_size, 1]
-            dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
+            dct_block = C @ block @ C.T
             dc = dct_block[0, 0]
 
             extracted_bits.append(round(dc / Q) % 2)

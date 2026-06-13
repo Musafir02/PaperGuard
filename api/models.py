@@ -2,8 +2,7 @@ import enum
 from datetime import datetime
 from sqlalchemy import String, Integer, Float, DateTime, Enum, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from app.database import Base
-
+from api.database import Base
 
 class CenterPhase(str, enum.Enum):
     SEALED = "SEALED"
@@ -12,19 +11,16 @@ class CenterPhase(str, enum.Enum):
     PRINTING = "PRINTING"
     DISTRIBUTED = "DISTRIBUTED"
 
-
 class RiskLevel(str, enum.Enum):
     PASS = "PASS"
     MONITOR = "MONITOR"
     FLAG = "FLAG"
     BLOCK = "BLOCK"
 
-
 class AlertStatus(str, enum.Enum):
     PENDING = "PENDING"
     CONFIRMED = "CONFIRMED"
     ESCALATED = "ESCALATED"
-
 
 class Center(Base):
     __tablename__ = "centers"
@@ -42,11 +38,11 @@ class Center(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     encrypted_paper_key: Mapped[str] = mapped_column(Text, default="")
     encrypted_paper_data: Mapped[str] = mapped_column(Text, default="")
+    security_info: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     students: Mapped[list["Student"]] = relationship(back_populates="center")
     audit_events: Mapped[list["AuditEvent"]] = relationship(back_populates="center")
-
 
 class Student(Base):
     __tablename__ = "students"
@@ -60,7 +56,6 @@ class Student(Base):
 
     center: Mapped["Center"] = relationship(back_populates="students")
     watermarks: Mapped[list["WatermarkRecord"]] = relationship(back_populates="student")
-
 
 class WatermarkRecord(Base):
     __tablename__ = "watermark_records"
@@ -76,7 +71,6 @@ class WatermarkRecord(Base):
 
     student: Mapped["Student"] = relationship(back_populates="watermarks")
 
-
 class AuditEvent(Base):
     __tablename__ = "audit_events"
 
@@ -91,7 +85,6 @@ class AuditEvent(Base):
 
     center: Mapped["Center"] = relationship(back_populates="audit_events")
 
-
 class Alert(Base):
     __tablename__ = "alerts"
 
@@ -101,8 +94,8 @@ class Alert(Base):
     image_hash: Mapped[str] = mapped_column(String(64), default="")
     similarity_score: Mapped[float] = mapped_column(Float, default=0.0)
     status: Mapped[AlertStatus] = mapped_column(Enum(AlertStatus), default=AlertStatus.PENDING)
+    description: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-
 
 class TranslatorAccess(Base):
     __tablename__ = "translator_access"
