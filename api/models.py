@@ -58,7 +58,7 @@ class Student(Base):
     device_id: Mapped[str] = mapped_column(String(100), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    center: Mapped["Center"] = relationship(back_populates="center")
+    center: Mapped["Center"] = relationship(back_populates="students")
     watermarks: Mapped[list["WatermarkRecord"]] = relationship(back_populates="student")
 
 class WatermarkRecord(Base):
