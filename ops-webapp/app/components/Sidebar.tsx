@@ -4,51 +4,78 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV = [
-  { href: "/dashboard", label: "Overview", icon: "◉" },
-  { href: "/dashboard/centers", label: "Centers", icon: "◈" },
-  { href: "/dashboard/center-risk", label: "Center Risk", icon: "⚡" },
-  { href: "/dashboard/translate", label: "Translate", icon: "🌐" },
-  { href: "/dashboard/watermark", label: "Watermark", icon: "◎" },
-  { href: "/dashboard/translator-shield", label: "Translator Shield", icon: "⛊" },
-  { href: "/dashboard/preprint", label: "Pre-Print", icon: "🔒" },
-  { href: "/dashboard/printer-fp", label: "Printer FP", icon: "⊞" },
-  { href: "/dashboard/forensics", label: "Forensics", icon: "⊛" },
-  { href: "/dashboard/alerts", label: "Alerts", icon: "⚠" },
-  { href: "/dashboard/audit", label: "Audit", icon: "≡" },
-  { href: "/dashboard/killswitch", label: "Kill Switch", icon: "✕" },
+  { href: "/dashboard", label: "Overview" },
+  { divider: true, label: "Operations" },
+  { href: "/dashboard/centers", label: "Centers" },
+  { href: "/dashboard/center-risk", label: "Risk Assessment" },
+  { href: "/dashboard/translate", label: "Translate" },
+  { divider: true, label: "Security" },
+  { href: "/dashboard/watermark", label: "Watermark" },
+  { href: "/dashboard/translator-shield", label: "Translator Shield" },
+  { href: "/dashboard/preprint", label: "Pre-Print" },
+  { href: "/dashboard/printer-fp", label: "Printer FP" },
+  { divider: true, label: "Response" },
+  { href: "/dashboard/forensics", label: "Forensics" },
+  { href: "/dashboard/alerts", label: "Alerts" },
+  { href: "/dashboard/audit", label: "Audit Chain" },
+  { href: "/dashboard/killswitch", label: "Kill Switch" },
 ];
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "/";
 
   return (
-    <aside className="w-56 bg-card border-r border-border flex flex-col min-h-screen">
-      <div className="p-4 border-b border-border">
-        <h1 className="text-accent font-mono font-bold text-lg tracking-wider">PAPERGUARD</h1>
-        <p className="text-muted text-xs mt-1">Ops Console v1.0</p>
+    <aside className="w-[220px] bg-bg-secondary border-r border-border flex flex-col h-screen sticky top-0">
+      <div className="px-5 py-5 border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <div className="w-6 h-6 rounded bg-accent/15 flex items-center justify-center">
+            <span className="text-accent text-xs font-bold font-mono">PG</span>
+          </div>
+          <div>
+            <h1 className="text-[13px] font-semibold tracking-wide text-text-primary">PaperGuard</h1>
+            <p className="text-[10px] text-text-muted font-mono uppercase tracking-widest">Ops Console</p>
+          </div>
+        </div>
       </div>
-      <nav className="flex-1 py-2">
-        {NAV.map((item) => {
-          const active = pathname === item.href || (item.href !== "/dashboard" && pathname?.startsWith(item.href));
+
+      <nav className="flex-1 py-3 px-3 overflow-y-auto">
+        {NAV.map((item, i) => {
+          if ("divider" in item && item.divider) {
+            return (
+              <div key={i} className="mt-5 mb-1.5 px-2">
+                <span className="text-[10px] font-medium text-text-muted uppercase tracking-widest">
+                  {item.label}
+                </span>
+              </div>
+            );
+          }
+
+          if (!("href" in item)) return null;
+          const href: string = item.href as string;
+
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+
           return (
             <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-2 px-4 py-2 text-sm transition-colors ${
+              key={href}
+              href={href}
+              className={`block px-2.5 py-[7px] text-[13px] rounded-[6px] transition-all duration-150 mb-[2px] ${
                 active
-                  ? "bg-accent/10 text-accent border-r-2 border-accent"
-                  : "text-muted hover:text-foreground hover:bg-white/5"
+                  ? "bg-accent-dim text-accent font-medium"
+                  : "text-text-secondary hover:text-text-primary hover:bg-bg-hover"
               }`}
             >
-              <span className="text-xs w-4">{item.icon}</span>
               {item.label}
             </Link>
           );
         })}
       </nav>
-      <div className="p-4 border-t border-border text-xs text-muted">
-        <span className="inline-block w-2 h-2 bg-green rounded-full mr-1"></span>
-        System Online
+
+      <div className="px-5 py-4 border-t border-border">
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-green pulse-dot"></span>
+          <span className="text-[11px] text-text-muted">System Online</span>
+        </div>
       </div>
     </aside>
   );
