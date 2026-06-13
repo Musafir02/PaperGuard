@@ -53,7 +53,7 @@ async def get_center(center_id: str, db: AsyncSession = Depends(get_db)):
         "risk_level": center.risk_level.value,
         "latitude": center.latitude,
         "longitude": center.longitude,
-        "students": [{"id": s.id, "roll_no": s.roll_no, "name": s.name} for s in students],
+        "students": [{"id": s.id, "roll_no": s.roll_no, "name": s.name, "center_id": s.center_id} for s in students],
     }
 
 
