@@ -12,113 +12,98 @@ export default function KillSwitchPage() {
   const [confirming, setConfirming] = useState(false);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    api.getCenters().then(setCenters).catch(console.error);
-  }, []);
+  useEffect(() => { api.getCenters().then(setCenters).catch(console.error); }, []);
 
   useEffect(() => {
     if (countdown <= 0) return;
-    const timer = setTimeout(() => setCountdown((c) => c - 1), 1000);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
   }, [countdown]);
 
-  const activate = () => {
-    setConfirming(true);
-    setCountdown(10);
-  };
+  const activate = () => { setConfirming(true); setCountdown(10); };
 
   const confirm = async () => {
-    try {
-      const res = await api.killSwitch(centerId, mode, officerToken);
-      setResult(res);
-    } catch (e: unknown) {
-      setResult({ error: e instanceof Error ? e.message : "Failed" });
-    }
-    setConfirming(false);
-    setCountdown(0);
+    try { setResult(await api.killSwitch(centerId, mode, officerToken)); }
+    catch (e: unknown) { setResult({ error: e instanceof Error ? e.message : "Failed" }); }
+    setConfirming(false); setCountdown(0);
   };
 
-  const cancel = () => {
-    setConfirming(false);
-    setCountdown(0);
-  };
+  const cancel = () => { setConfirming(false); setCountdown(0); };
 
   const selectedCenter = centers.find((c) => c.id === centerId);
   const validPhases = mode === "PRE_PRINT" ? ["SEALED", "QUORUM"] : ["PRINTING", "DISTRIBUTED"];
   const canActivate = selectedCenter && validPhases.includes(selectedCenter.phase);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">M9 — Kill Switch</h1>
-      <p className="text-muted text-sm">Emergency stop. Locks all terminals at a center. Requires officer token + confirmation.</p>
+    <div className="p-8 space-y-5 max-w-[600px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Kill Switch</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">Emergency stop — locks all terminals at a center</p>
+      </div>
 
-      <div className="bg-card border border-red/30 rounded-lg p-6 space-y-4">
+      <div className="bg-bg-card border border-red/20 rounded-xl p-5 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Center</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Center</label>
             <select value={centerId} onChange={(e) => setCenterId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent">
-              {centers.map((c) => (
-                <option key={c.id} value={c.id}>{c.id} — {c.name} [{c.phase}]</option>
-              ))}
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors">
+              {centers.map((c) => (<option key={c.id} value={c.id}>{c.id} — {c.name}</option>))}
             </select>
           </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Mode</label>
-            <div className="flex gap-2">
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Mode</label>
+            <div className="flex gap-1.5">
               {["PRE_PRINT", "POST_PRINT"].map((m) => (
                 <button key={m} onClick={() => setMode(m)}
-                  className={`flex-1 px-3 py-2 text-xs font-mono rounded border transition-colors ${
-                    mode === m ? "bg-red/10 border-red text-red" : "border-border text-muted"
+                  className={`flex-1 px-2 py-2 text-[11px] font-mono rounded-lg border transition-all ${
+                    mode === m ? "bg-red-dim border-red/30 text-red" : "border-border text-text-muted"
                   }`}>
-                  {m}
+                  {m.toLowerCase()}
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        <div>
-          <label className="text-xs text-muted uppercase tracking-wider block mb-1">Officer Token</label>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Officer Token</label>
           <input value={officerToken} onChange={(e) => setOfficerToken(e.target.value)}
-            className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
+            className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors" />
         </div>
 
         {!canActivate && selectedCenter && (
-          <p className="text-xs text-yellow">
-            Center {centerId} is in {selectedCenter.phase} phase. Mode {mode} requires: {validPhases.join(" or ")}
+          <p className="text-[11px] text-yellow bg-yellow-dim rounded-lg px-3 py-2">
+            Center is {selectedCenter.phase.toLowerCase()} — mode requires {validPhases.join(" or ").toLowerCase()}
           </p>
         )}
 
         {confirming ? (
-          <div className="space-y-3">
-            <div className="text-center">
-              <p className="text-3xl font-mono font-bold text-red">{countdown}</p>
-              <p className="text-xs text-muted mt-1">seconds until activation</p>
-            </div>
-            <div className="flex gap-3">
+          <div className="space-y-3 text-center pt-2">
+            <p className="text-4xl font-semibold font-mono text-red tabular-nums">{countdown}</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider">seconds until activation</p>
+            <div className="flex gap-2 pt-2">
               <button onClick={confirm} disabled={countdown > 0}
-                className="flex-1 px-4 py-3 bg-red text-white rounded text-sm font-mono hover:opacity-90 transition-colors disabled:opacity-50">
-                Confirm Kill Switch
+                className="flex-1 py-2.5 bg-red text-white rounded-lg text-[12px] font-medium hover:opacity-90 transition-colors disabled:opacity-40">
+                Confirm
               </button>
               <button onClick={cancel}
-                className="px-4 py-3 border border-border rounded text-sm font-mono hover:bg-white/5 transition-colors">
+                className="px-4 py-2.5 border border-border rounded-lg text-[12px] font-medium text-text-secondary hover:bg-bg-hover transition-colors">
                 Cancel
               </button>
             </div>
           </div>
         ) : (
           <button onClick={activate} disabled={!canActivate}
-            className="w-full px-4 py-3 bg-red text-white rounded text-sm font-mono hover:opacity-90 transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            className="w-full py-2.5 bg-red text-white rounded-lg text-[12px] font-medium hover:opacity-90 transition-colors disabled:opacity-20 disabled:cursor-not-allowed">
             Activate Kill Switch
           </button>
         )}
       </div>
 
       {result && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-2">Result</p>
-          <pre className="text-sm font-mono text-green overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Result</p>
+          <pre className="text-[12px] font-mono text-green whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
     </div>
