@@ -1,6 +1,6 @@
-import os
 from PIL import Image
 import numpy as np
+from scipy.fftpack import dct, idct
 
 
 WATERMARK_STRENGTH = 3
@@ -23,7 +23,7 @@ def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) 
                 break
 
             block = img_array[i:i+block_size, j:j+block_size, 0]
-            dct_block = np.fft.dct(np.fft.idct(block))
+            dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
 
             dc_coeff = dct_block[0, 0]
             target_bit = bits[bit_idx]
@@ -37,7 +37,7 @@ def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) 
                 if dct_block[0, 0] % 2 != 0:
                     dct_block[0, 0] -= WATERMARK_STRENGTH
 
-            reconstructed = np.fft.idct(np.fft.idct(dct_block))
+            reconstructed = idct(idct(dct_block.T, norm="ortho").T, norm="ortho")
             img_array[i:i+block_size, j:j+block_size, 0] = np.clip(reconstructed, 0, 255)
             bit_idx += 1
 
@@ -63,7 +63,7 @@ def decode_watermark_dct(image_path: str, max_bits: int = 256) -> str:
                 break
 
             block = img_array[i:i+block_size, j:j+block_size, 0]
-            dct_block = np.fft.dct(np.fft.idct(block))
+            dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
             dc_coeff = dct_block[0, 0]
 
             extracted_bits.append(1 if dc_coeff % 2 != 0 else 0)

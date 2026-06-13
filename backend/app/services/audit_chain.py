@@ -45,7 +45,8 @@ async def create_audit_event(
     prev_hmac = await get_last_hmac(db)
     now = datetime.utcnow().isoformat()
 
-    temp_id = await db.scalar(select(func.coalesce(func.max(AuditEvent.id), 0)) + 1)
+    max_id = await db.scalar(select(func.coalesce(func.max(AuditEvent.id), 0)))
+    temp_id = (max_id or 0) + 1
     hmac_value = build_hmac_chain(temp_id, event_type, roll_no, center_id, now, payload, prev_hmac)
 
     event = AuditEvent(
