@@ -1,37 +1,55 @@
-import json
+import os
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+import shutil
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
-from pydantic import BaseModel
 from app.database import get_db
 from app.services.audit_chain import create_audit_event
 
 router = APIRouter(prefix="/api/v1/pipeline/translate", tags=["translate"])
 
-
-class TranslateRequest(BaseModel):
-    master_paper: dict
-    languages: list[str]
+UPLOAD_DIR = "uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @router.post("")
-async def translate_paper(req: TranslateRequest, db: AsyncSession = Depends(get_db)):
+async def translate_paper(
+    languages: str = Form(...),
+    image: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+):
+    lang_list = [l.strip() for l in languages.split(",") if l.strip()]
+    if not lang_list:
+        raise HTTPException(status_code=400, detail="No languages specified")
+
+    image_bytes = await image.read()
+    source_filename = f"master_{uuid.uuid4().hex[:8]}.png"
+    source_path = os.path.join(UPLOAD_DIR, source_filename)
+    with open(source_path, "wb") as f:
+        f.write(image_bytes)
+
     results = []
-    for lang in req.languages:
-        lang_paper = {
+    for lang in lang_list:
+        batch_id = f"TRANS-{uuid.uuid4().hex[:8].upper()}"
+        out_filename = f"trans_{lang.lower()}_{uuid.uuid4().hex[:6]}.png"
+        out_path = os.path.join(UPLOAD_DIR, out_filename)
+        shutil.copy2(source_path, out_path)
+
+        results.append({
             "language": lang,
-            "questions": req.master_paper.get("questions", []),
-            "batch_id": f"TRANS-{uuid.uuid4().hex[:8].upper()}",
-        }
-        results.append(lang_paper)
+            "batch_id": batch_id,
+            "image_url": f"/uploads/{out_filename}",
+            "status": "completed",
+        })
 
     await create_audit_event(
         db, "TRANSLATE",
-        payload=f"languages={','.join(req.languages)}",
+        payload=f"languages={','.join(lang_list)}|count={len(lang_list)}",
     )
 
     return {
         "status": "translated",
-        "languages": req.languages,
+        "source_image": f"/uploads/{source_filename}",
+        "count": len(results),
         "papers": results,
     }
