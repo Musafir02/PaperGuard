@@ -14,144 +14,115 @@ export default function PreprintPage() {
   const [countdown, setCountdown] = useState(90);
   const [result, setResult] = useState<Record<string, unknown> | null>(null);
 
-  useEffect(() => {
-    api.getCenters().then((c) => setCenters(c));
-  }, []);
+  useEffect(() => { api.getCenters().then(setCenters); }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown((prev) => (prev <= 1 ? 90 : prev - 1));
-    }, 1000);
+    const interval = setInterval(() => setCountdown((p) => (p <= 1 ? 90 : p - 1)), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchState = async () => {
-    const res = await api.getPreprintState(centerId);
-    setPhase(res.phase);
-  };
+  const fetchState = async () => { const r = await api.getPreprintState(centerId); setPhase(r.phase); };
+  const fetchTotp = async () => { const r = await api.getTotp(centerId); setCurrentTotp(r.totp_code); };
 
-  const fetchTotp = async () => {
-    const res = await api.getTotp(centerId);
-    setCurrentTotp(res.totp_code);
-  };
-
-  const seal = async () => {
-    const res = await api.sealPaper(centerId, "MOCK_PAPER_DATA");
-    setResult(res);
-    fetchState();
-  };
+  const seal = async () => { const r = await api.sealPaper(centerId, "MOCK_PAPER_DATA"); setResult(r); fetchState(); };
 
   const unlock = async () => {
-    try {
-      const res = await api.unlockPaper(centerId, totpCode || currentTotp);
-      setResult(res);
-      fetchState();
-    } catch (e: unknown) {
-      setResult({ error: e instanceof Error ? e.message : "Failed" });
-    }
+    try { const r = await api.unlockPaper(centerId, totpCode || currentTotp); setResult(r); fetchState(); }
+    catch (e: unknown) { setResult({ error: e instanceof Error ? e.message : "Failed" }); }
   };
 
   const phaseIndex = PHASES.indexOf(phase);
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">M4 — Pre-Print Protocol</h1>
-      <p className="text-muted text-sm">Encrypted paper delivery with TOTP-based unlock at center.</p>
+    <div className="p-8 space-y-5 max-w-[900px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Pre-Print Protocol</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">Encrypted paper delivery with TOTP-based unlock</p>
+      </div>
 
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-        <div>
-          <label className="text-xs text-muted uppercase tracking-wider block mb-1">Center</label>
-          <select
-            value={centerId}
-            onChange={(e) => setCenterId(e.target.value)}
-            className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent"
-          >
-            {centers.map((c) => (
-              <option key={c.id} value={c.id}>{c.id} — {c.name}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button onClick={fetchState} className="px-3 py-1 text-xs font-mono border border-border rounded hover:bg-white/5">
-            Refresh State
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="flex items-end gap-3">
+          <div className="flex-1 space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Center</label>
+            <select value={centerId} onChange={(e) => setCenterId(e.target.value)}
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors">
+              {centers.map((c) => (<option key={c.id} value={c.id}>{c.id} — {c.name}</option>))}
+            </select>
+          </div>
+          <button onClick={fetchState} className="px-3 py-2 text-[11px] font-mono border border-border rounded-lg text-text-muted hover:text-text-secondary hover:bg-bg-hover transition-colors">
+            Refresh
           </button>
-          <button onClick={fetchTotp} className="px-3 py-1 text-xs font-mono border border-border rounded hover:bg-white/5">
-            Get Current TOTP
+          <button onClick={fetchTotp} className="px-3 py-2 text-[11px] font-mono border border-border rounded-lg text-text-muted hover:text-text-secondary hover:bg-bg-hover transition-colors">
+            Get TOTP
           </button>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-4">
-        <p className="text-xs text-muted uppercase tracking-wider mb-4">State Machine</p>
-        <div className="flex items-center gap-1">
+      <div className="bg-bg-card border border-border rounded-xl p-5">
+        <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-4">State Machine</p>
+        <div className="flex items-center gap-1.5">
           {PHASES.map((p, i) => (
             <div key={p} className="flex items-center">
-              <div
-                className={`px-3 py-2 text-xs font-mono rounded ${
-                  i <= phaseIndex ? "bg-accent text-white" : "bg-border/50 text-muted"
-                }`}
-              >
-                {p}
+              <div className={`px-3 py-1.5 text-[11px] font-mono rounded-md transition-colors ${
+                i <= phaseIndex ? "bg-accent text-white" : "bg-bg-primary text-text-muted border border-border"
+              }`}>
+                {p.toLowerCase()}
               </div>
-              {i < PHASES.length - 1 && <span className="mx-1 text-muted">→</span>}
+              {i < PHASES.length - 1 && <span className="mx-1 text-text-muted/40 text-[10px]">→</span>}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-4">
-        <p className="text-xs text-muted uppercase tracking-wider mb-3">TOTP Countdown</p>
-        <div className="flex items-center gap-4">
-          <div className="text-4xl font-mono font-bold text-accent">{countdown}s</div>
-          {currentTotp && (
-            <div className="text-lg font-mono text-green">{currentTotp}</div>
-          )}
+      <div className="bg-bg-card border border-border rounded-xl p-5 flex items-center gap-6">
+        <div className="text-center">
+          <p className="text-3xl font-semibold font-mono text-accent tabular-nums">{countdown}</p>
+          <p className="text-[10px] text-text-muted mt-1 uppercase tracking-wider">seconds</p>
         </div>
+        {currentTotp && (
+          <div className="flex-1 text-center">
+            <p className="text-[10px] text-text-muted uppercase tracking-wider mb-1">Current TOTP</p>
+            <p className="text-xl font-mono font-semibold text-green tracking-widest">{currentTotp}</p>
+          </div>
+        )}
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-        <p className="text-xs text-muted uppercase tracking-wider">Actions</p>
-        <div className="flex gap-3">
-          <button onClick={seal}
-            className="px-4 py-2 bg-accent text-white rounded text-sm font-mono hover:bg-accent-hover transition-colors">
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+        <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider">Actions</p>
+        <div className="flex items-center gap-3">
+          <button onClick={seal} className="px-4 py-2 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors">
             Seal Paper
           </button>
           <div className="flex items-center gap-2">
-            <input
-              value={totpCode}
-              onChange={(e) => setTotpCode(e.target.value)}
-              placeholder="Enter TOTP or auto-fill"
-              className="bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent w-48"
-            />
-            <button onClick={unlock}
-              className="px-4 py-2 bg-green text-white rounded text-sm font-mono hover:opacity-90 transition-colors">
+            <input value={totpCode} onChange={(e) => setTotpCode(e.target.value)} placeholder="TOTP code"
+              className="w-40 bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary placeholder:text-text-muted/50 transition-colors" />
+            <button onClick={unlock} className="px-4 py-2 bg-green text-white rounded-lg text-[12px] font-medium hover:opacity-90 transition-colors">
               Unlock
             </button>
           </div>
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-4">
-        <p className="text-xs text-muted uppercase tracking-wider mb-2">Mock CCTV</p>
-        <div className="flex items-center gap-3">
-          <div className="w-32 h-20 bg-border/30 rounded flex items-center justify-center text-muted text-xs">
-            FEED OFFLINE
+      <div className="bg-bg-card border border-border rounded-xl p-5">
+        <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">CCTV Status</p>
+        <div className="flex items-center gap-4">
+          <div className="w-24 h-16 bg-bg-primary border border-border rounded-lg flex items-center justify-center">
+            <span className="text-[10px] text-text-muted font-mono">FEED</span>
           </div>
           <div>
-            <p className="text-sm">Printing Room: 2 staff present</p>
-            <p className="text-xs text-green flex items-center gap-1 mt-1">
-              <span className="inline-block w-1.5 h-1.5 bg-green rounded-full"></span>
-              Recording Active
-            </p>
+            <p className="text-[12px] text-text-primary">Printing Room — 2 staff present</p>
+            <div className="flex items-center gap-1.5 mt-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green pulse-dot"></span>
+              <span className="text-[11px] text-green">Recording</span>
+            </div>
           </div>
         </div>
       </div>
 
       {result && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-2">Result</p>
-          <pre className="text-sm font-mono text-green overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Result</p>
+          <pre className="text-[12px] font-mono text-green whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
     </div>
