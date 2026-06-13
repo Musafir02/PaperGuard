@@ -34,7 +34,7 @@ export default function PreprintPage() {
   const phaseIndex = PHASES.indexOf(phase);
 
   return (
-    <div className="p-8 space-y-5 max-w-[900px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Pre-Print Protocol</h1>
         <p className="text-[12px] text-text-muted mt-0.5">Encrypted paper delivery with TOTP-based unlock</p>

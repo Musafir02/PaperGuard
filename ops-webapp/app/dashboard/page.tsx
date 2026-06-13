@@ -64,7 +64,7 @@ export default function DashboardPage() {
   const phases = ["SEALED", "QUORUM", "DECRYPTED", "PRINTING", "DISTRIBUTED"];
 
   return (
-    <div className="p-8 space-y-6 max-w-[1200px] animate-fade-in">
+    <div className="p-8 space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">Dashboard</h1>

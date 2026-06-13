@@ -25,7 +25,7 @@ export default function ForensicsPage() {
   };
 
   return (
-    <div className="p-8 space-y-5 max-w-[900px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-lg font-semibold">Forensics</h1>

@@ -36,7 +36,7 @@ export default function CentersPage() {
   if (loading) return <div className="p-8 text-text-muted text-[13px]">Loading...</div>;
 
   return (
-    <div className="p-8 space-y-5 max-w-[1200px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Centers</h1>
         <p className="text-[12px] text-text-muted mt-0.5">{centers.length} exam centers registered</p>

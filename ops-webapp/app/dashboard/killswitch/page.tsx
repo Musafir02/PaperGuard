@@ -35,7 +35,7 @@ export default function KillSwitchPage() {
   const canActivate = selectedCenter && validPhases.includes(selectedCenter.phase);
 
   return (
-    <div className="p-8 space-y-5 max-w-[600px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Kill Switch</h1>
         <p className="text-[12px] text-text-muted mt-0.5">Emergency stop — locks all terminals at a center</p>

@@ -27,7 +27,7 @@ export default function PrinterFpPage() {
   };
 
   return (
-    <div className="p-8 space-y-5 max-w-[800px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Printer Fingerprint</h1>
         <p className="text-[12px] text-text-muted mt-0.5">Invisible margin micro-pattern with batch ID</p>

@@ -35,7 +35,7 @@ export default function AuditPage() {
   if (loading) return <div className="p-8 text-text-muted text-[13px]">Loading...</div>;
 
   return (
-    <div className="p-8 space-y-5 max-w-[1200px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold">Audit Chain</h1>

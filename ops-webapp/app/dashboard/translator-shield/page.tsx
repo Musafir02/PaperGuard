@@ -31,7 +31,7 @@ export default function TranslatorShieldPage() {
   };
 
   return (
-    <div className="p-8 space-y-5 max-w-[800px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Translator Shield</h1>
         <p className="text-[12px] text-text-muted mt-0.5">Shamir Secret Sharing — each translator sees only their section</p>

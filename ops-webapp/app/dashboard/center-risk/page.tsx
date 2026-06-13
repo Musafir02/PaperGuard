@@ -52,7 +52,7 @@ export default function CenterRiskPage() {
   if (loading) return <div className="p-8 text-text-muted text-[13px]">Loading...</div>;
 
   return (
-    <div className="p-8 space-y-5 max-w-[1200px] animate-fade-in">
+    <div className="p-8 space-y-5  animate-fade-in">
       <div>
         <h1 className="text-lg font-semibold">Risk Assessment</h1>
         <p className="text-[12px] text-text-muted mt-0.5">Pre-assignment center risk scoring</p>
