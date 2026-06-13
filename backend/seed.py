@@ -4,6 +4,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(__file__))
 
+from sqlalchemy import text
 from app.database import async_session, init_db
 from app.models.models import Center, Student, AuditEvent, Alert, RiskLevel, CenterPhase, AlertStatus
 from app.services.totp_lock import generate_totp_secret
@@ -44,6 +45,14 @@ ALERTS = [
 async def seed():
     await init_db()
     async with async_session() as db:
+        await db.execute(text("DELETE FROM audit_events"))
+        await db.execute(text("DELETE FROM watermark_records"))
+        await db.execute(text("DELETE FROM translator_access"))
+        await db.execute(text("DELETE FROM alerts"))
+        await db.execute(text("DELETE FROM students"))
+        await db.execute(text("DELETE FROM centers"))
+        await db.commit()
+
         for c in CENTERS:
             risk = calculate_risk_score(c["state"], latitude=c["lat"], longitude=c["lon"])
             center = Center(
