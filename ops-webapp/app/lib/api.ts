@@ -51,6 +51,11 @@ export const api = {
   getAlerts: (status?: string) => request(`/api/v1/telegram-hunter/alerts${status ? `?status=${status}` : ""}`),
   confirmAlert: (id: number) => request(`/api/v1/telegram-hunter/alerts/${id}/confirm`, { method: "POST" }),
   escalateAlert: (id: number) => request(`/api/v1/telegram-hunter/alerts/${id}/escalate`, { method: "POST" }),
+  scanTelegramLeak: (file: File) => {
+    const fd = new FormData();
+    fd.append("image", file);
+    return request("/api/v1/telegram-hunter/scan", { method: "POST", body: fd, headers: {} });
+  },
 
   exportAudit: () => request("/api/v1/audit/export"),
   verifyAudit: () => request("/api/v1/audit/verify"),
