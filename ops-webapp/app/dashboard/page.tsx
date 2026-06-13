@@ -20,11 +20,12 @@ interface Alert {
   similarity_score: number;
 }
 
-function StatCard({ label, value, color }: { label: string; value: string | number; color: string }) {
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-card border border-border rounded-lg p-4">
-      <p className="text-muted text-xs uppercase tracking-wider">{label}</p>
-      <p className={`text-2xl font-mono font-bold mt-1 ${color}`}>{value}</p>
+    <div className="bg-bg-card border border-border rounded-xl p-4 space-y-1">
+      <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider">{label}</p>
+      <p className="text-2xl font-semibold font-mono text-text-primary">{value}</p>
+      {sub && <p className="text-[11px] text-text-muted">{sub}</p>}
     </div>
   );
 }
@@ -32,12 +33,15 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
 function PhaseBar({ phase, count, total }: { phase: string; count: number; total: number }) {
   const pct = total > 0 ? (count / total) * 100 : 0;
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <span className="w-24 text-muted font-mono text-xs">{phase}</span>
-      <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
-        <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${pct}%` }} />
+    <div className="flex items-center gap-3">
+      <span className="w-24 text-[12px] text-text-muted font-mono">{phase.toLowerCase()}</span>
+      <div className="flex-1 h-[6px] bg-bg-primary rounded-full overflow-hidden">
+        <div
+          className="h-full bg-accent/70 rounded-full transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        />
       </div>
-      <span className="w-12 text-right text-muted font-mono text-xs">{count}/{total}</span>
+      <span className="w-14 text-right text-[11px] text-text-muted font-mono">{count}/{total}</span>
     </div>
   );
 }
@@ -54,72 +58,71 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-8 text-muted">Loading...</div>;
+  if (loading) return <div className="p-8 text-text-muted text-[13px]">Loading...</div>;
 
   const flagged = centers.filter((c) => c.risk_level === "FLAG" || c.risk_level === "BLOCK").length;
   const phases = ["SEALED", "QUORUM", "DECRYPTED", "PRINTING", "DISTRIBUTED"];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-8 space-y-6 max-w-[1200px] animate-fade-in">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-mono font-bold">Operations Dashboard</h1>
-        <span className="text-xs text-muted font-mono">LIVE</span>
-      </div>
-
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Centers" value={centers.length} color="text-foreground" />
-        <StatCard label="Printing Phase" value={centers.filter((c) => c.phase === "PRINTING").length} color="text-accent" />
-        <StatCard label="Active Alerts" value={alerts.filter((a) => a.status === "PENDING").length} color="text-yellow" />
-        <StatCard label="Flagged Centers" value={flagged} color="text-red" />
-      </div>
-
-      <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-        <h2 className="text-sm font-mono uppercase text-muted tracking-wider">Pipeline Progress</h2>
-        {phases.map((p) => (
-          <PhaseBar key={p} phase={p} count={centers.filter((c) => c.phase === p).length} total={centers.length} />
-        ))}
-      </div>
-
-      <div className="bg-card border border-border rounded-lg overflow-hidden">
-        <div className="p-4 border-b border-border">
-          <h2 className="text-sm font-mono uppercase text-muted tracking-wider">Center Status</h2>
+        <div>
+          <h1 className="text-lg font-semibold">Dashboard</h1>
+          <p className="text-[12px] text-text-muted mt-0.5">System-wide operations overview</p>
         </div>
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-muted text-xs uppercase border-b border-border">
-              <th className="text-left p-3 font-mono">ID</th>
-              <th className="text-left p-3 font-mono">Name</th>
-              <th className="text-left p-3 font-mono">City</th>
-              <th className="text-left p-3 font-mono">Phase</th>
-              <th className="text-left p-3 font-mono">Risk</th>
-            </tr>
-          </thead>
-          <tbody>
-            {centers.map((c) => (
-              <tr key={c.id} className="border-b border-border/50 hover:bg-white/[0.02]">
-                <td className="p-3 font-mono text-accent">{c.id}</td>
-                <td className="p-3">{c.name}</td>
-                <td className="p-3 text-muted">{c.city}</td>
-                <td className="p-3">
-                  <span className="font-mono text-xs px-2 py-1 rounded bg-white/5">{c.phase}</span>
-                </td>
-                <td className="p-3">
-                  <span
-                    className={`font-mono text-xs px-2 py-1 rounded ${
-                      c.risk_level === "PASS"
-                        ? "bg-green/10 text-green"
-                        : c.risk_level === "MONITOR"
-                        ? "bg-yellow/10 text-yellow"
-                        : "bg-red/10 text-red"
-                    }`}
-                  >
-                    {c.risk_level} ({c.risk_score})
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-green pulse-dot"></span>
+          <span className="text-[11px] font-mono text-text-muted uppercase tracking-wider">Live</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <StatCard label="Centers" value={centers.length} sub="registered" />
+        <StatCard label="Printing" value={centers.filter((c) => c.phase === "PRINTING").length} sub="active" />
+        <StatCard label="Alerts" value={alerts.filter((a) => a.status === "PENDING").length} sub="pending review" />
+        <StatCard label="Flagged" value={flagged} sub="high risk" />
+      </div>
+
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+        <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Pipeline Progress</p>
+        <div className="space-y-2.5">
+          {phases.map((p) => (
+            <PhaseBar key={p} phase={p} count={centers.filter((c) => c.phase === p).length} total={centers.length} />
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-border">
+          <p className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Centers</p>
+        </div>
+        <div className="divide-y divide-border">
+          {centers.map((c) => (
+            <div key={c.id} className="px-5 py-3 flex items-center justify-between hover:bg-bg-hover/50 transition-colors">
+              <div className="flex items-center gap-4">
+                <span className="text-[12px] font-mono text-accent w-16">{c.id}</span>
+                <div>
+                  <p className="text-[13px] font-medium text-text-primary">{c.name}</p>
+                  <p className="text-[11px] text-text-muted">{c.city}, {c.state}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-[11px] font-mono text-text-muted bg-bg-primary px-2 py-0.5 rounded">{c.phase.toLowerCase()}</span>
+                <span
+                  className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded ${
+                    c.risk_level === "PASS"
+                      ? "text-green bg-green-dim"
+                      : c.risk_level === "MONITOR"
+                      ? "text-yellow bg-yellow-dim"
+                      : "text-red bg-red-dim"
+                  }`}
+                >
+                  {c.risk_level.toLowerCase()}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
