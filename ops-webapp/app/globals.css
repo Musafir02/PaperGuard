@@ -1,48 +1,96 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0a0e14;
-  --foreground: #e6e6e6;
-  --accent: #d97757;
-  --accent-hover: #c4664a;
-  --card-bg: #111820;
-  --border: #1e2a36;
-  --text-muted: #6b7a8d;
-  --green: #22c55e;
-  --yellow: #eab308;
-  --red: #ef4444;
-  --blue: #3b82f6;
+  --bg-primary: #09090b;
+  --bg-secondary: #0f0f12;
+  --bg-card: #141418;
+  --bg-elevated: #1a1a1f;
+  --bg-hover: #1f1f25;
+  --border: #232329;
+  --border-subtle: #1c1c22;
+  --text-primary: #e4e4e7;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+  --accent: #c2835e;
+  --accent-dim: rgba(194, 131, 94, 0.12);
+  --accent-hover: #b3744f;
+  --green: #34d399;
+  --green-dim: rgba(52, 211, 153, 0.1);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251, 191, 36, 0.1);
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.1);
+  --blue: #60a5fa;
+  --blue-dim: rgba(96, 165, 250, 0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-card: var(--card-bg);
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-secondary: var(--bg-secondary);
+  --color-bg-card: var(--bg-card);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-bg-hover: var(--bg-hover);
   --color-border: var(--border);
-  --color-muted: var(--text-muted);
+  --color-border-subtle: var(--border-subtle);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-dim: var(--accent-dim);
+  --color-accent-hover: var(--accent-hover);
   --color-green: var(--green);
+  --color-green-dim: var(--green-dim);
   --color-yellow: var(--yellow);
+  --color-yellow-dim: var(--yellow-dim);
   --color-red: var(--red);
+  --color-red-dim: var(--red-dim);
   --color-blue: var(--blue);
+  --color-blue-dim: var(--blue-dim);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
 
-::-webkit-scrollbar {
-  width: 6px;
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-::-webkit-scrollbar-track {
-  background: var(--background);
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--accent);
 }
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 3px;
+
+input, textarea, select {
+  outline: none;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1px var(--accent-dim);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.pulse-dot {
+  animation: pulse-dot 2s ease-in-out infinite;
 }
