@@ -18,64 +18,69 @@ interface Center {
 
 export default function CentersPage() {
   const [centers, setCenters] = useState<Center[]>([]);
-  const [selected, setSelected] = useState<Center | null>(null);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [details, setDetails] = useState<Center | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     api.getCenters().then(setCenters).catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const loadDetail = async (id: string) => {
+  const toggle = async (id: string) => {
+    if (selected === id) { setSelected(null); setDetails(null); return; }
+    setSelected(id);
     const c = await api.getCenter(id);
-    setSelected(c);
+    setDetails(c);
   };
 
-  if (loading) return <div className="p-8 text-muted">Loading...</div>;
+  if (loading) return <div className="p-8 text-text-muted text-[13px]">Loading...</div>;
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">Centers</h1>
+    <div className="p-8 space-y-5 max-w-[1200px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Centers</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">{centers.length} exam centers registered</p>
+      </div>
 
-      <div className="grid gap-4">
+      <div className="space-y-2">
         {centers.map((c) => (
           <div
             key={c.id}
-            className={`bg-card border rounded-lg p-4 cursor-pointer transition-colors ${
-              selected?.id === c.id ? "border-accent" : "border-border hover:border-border/80"
+            className={`bg-bg-card border rounded-xl overflow-hidden transition-colors cursor-pointer ${
+              selected === c.id ? "border-accent/40" : "border-border hover:border-border"
             }`}
-            onClick={() => loadDetail(c.id)}
+            onClick={() => toggle(c.id)}
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <span className="font-mono text-accent text-sm">{c.id}</span>
-                <span className="ml-3 font-medium">{c.name}</span>
-                <span className="ml-2 text-muted text-sm">— {c.city}, {c.state}</span>
+            <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <span className="text-[12px] font-mono text-accent w-16">{c.id}</span>
+                <div>
+                  <p className="text-[13px] font-medium">{c.name}</p>
+                  <p className="text-[11px] text-text-muted">{c.city}, {c.state}</p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className="font-mono text-xs px-2 py-1 rounded bg-white/5">{c.phase}</span>
+                <span className="text-[11px] font-mono text-text-muted bg-bg-primary px-2 py-0.5 rounded">{c.phase.toLowerCase()}</span>
                 <span
-                  className={`font-mono text-xs px-2 py-1 rounded ${
-                    c.risk_level === "PASS"
-                      ? "bg-green/10 text-green"
-                      : c.risk_level === "MONITOR"
-                      ? "bg-yellow/10 text-yellow"
-                      : "bg-red/10 text-red"
+                  className={`text-[11px] font-mono font-medium px-2 py-0.5 rounded ${
+                    c.risk_level === "PASS" ? "text-green bg-green-dim" :
+                    c.risk_level === "MONITOR" ? "text-yellow bg-yellow-dim" : "text-red bg-red-dim"
                   }`}
                 >
-                  {c.risk_level} ({c.risk_score})
+                  {c.risk_level.toLowerCase()}
                 </span>
               </div>
             </div>
 
-            {selected?.id === c.id && selected.students && (
-              <div className="mt-4 pt-4 border-t border-border">
-                <p className="text-xs text-muted uppercase tracking-wider mb-2">Students</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {selected.students.map((s) => (
-                    <div key={s.id} className="text-sm flex items-center gap-2">
+            {selected === c.id && details && details.students && (
+              <div className="px-5 pb-4 pt-2 border-t border-border/50">
+                <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-2.5">Students</p>
+                <div className="grid grid-cols-2 gap-x-8 gap-y-1.5">
+                  {details.students.map((s) => (
+                    <div key={s.id} className="flex items-center gap-2 text-[12px]">
                       <span className="font-mono text-accent">{s.roll_no}</span>
-                      <span className="text-muted">—</span>
-                      <span>{s.name}</span>
+                      <span className="text-text-muted">·</span>
+                      <span className="text-text-secondary">{s.name}</span>
                     </div>
                   ))}
                 </div>
