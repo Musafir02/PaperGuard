@@ -2,43 +2,39 @@ from PIL import Image
 import numpy as np
 from scipy.fftpack import dct, idct
 
-
-WATERMARK_STRENGTH = 3
-
-
 def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) -> str:
     img = Image.open(image_path).convert("RGB")
     img_array = np.array(img, dtype=np.float32)
 
-    binary_data = "".join(format(ord(c), "08b") for c in watermark_data)
+    binary_data = "".join(format(ord(c), "08b") for c in watermark_data) + "00000000"
     bits = [int(b) for b in binary_data]
 
     h, w, _ = img_array.shape
     block_size = 8
     bit_idx = 0
+    Q = 16
 
     for i in range(0, h - block_size + 1, block_size):
         for j in range(0, w - block_size + 1, block_size):
             if bit_idx >= len(bits):
                 break
 
-            block = img_array[i:i+block_size, j:j+block_size, 0]
+            block = img_array[i:i+block_size, j:j+block_size, 1]
             dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
 
-            dc_coeff = dct_block[0, 0]
-            target_bit = bits[bit_idx]
+            dc = dct_block[0, 0]
+            bit = bits[bit_idx]
 
-            if target_bit == 1:
-                dct_block[0, 0] = dc_coeff + WATERMARK_STRENGTH if dc_coeff % 2 == 0 else dc_coeff
-                if dct_block[0, 0] % 2 != 1:
-                    dct_block[0, 0] += WATERMARK_STRENGTH
-            else:
-                dct_block[0, 0] = dc_coeff - WATERMARK_STRENGTH if dc_coeff % 2 == 1 else dc_coeff
-                if dct_block[0, 0] % 2 != 0:
-                    dct_block[0, 0] -= WATERMARK_STRENGTH
+            q_coeff = round(dc / Q)
+            if q_coeff % 2 != bit:
+                if q_coeff > (dc / Q):
+                    q_coeff -= 1
+                else:
+                    q_coeff += 1
+            dct_block[0, 0] = q_coeff * Q
 
             reconstructed = idct(idct(dct_block.T, norm="ortho").T, norm="ortho")
-            img_array[i:i+block_size, j:j+block_size, 0] = np.clip(reconstructed, 0, 255)
+            img_array[i:i+block_size, j:j+block_size, 1] = np.clip(reconstructed, 0, 255)
             bit_idx += 1
 
         if bit_idx >= len(bits):
@@ -48,25 +44,25 @@ def embed_watermark_dct(image_path: str, watermark_data: str, output_path: str) 
     output.save(output_path, quality=95)
     return output_path
 
-
-def decode_watermark_dct(image_path: str, max_bits: int = 256) -> str:
+def decode_watermark_dct(image_path: str, max_bits: int = 512) -> str:
     img = Image.open(image_path).convert("RGB")
     img_array = np.array(img, dtype=np.float32)
 
     h, w, _ = img_array.shape
     block_size = 8
     extracted_bits = []
+    Q = 16
 
     for i in range(0, h - block_size + 1, block_size):
         for j in range(0, w - block_size + 1, block_size):
             if len(extracted_bits) >= max_bits:
                 break
 
-            block = img_array[i:i+block_size, j:j+block_size, 0]
+            block = img_array[i:i+block_size, j:j+block_size, 1]
             dct_block = dct(dct(block.T, norm="ortho").T, norm="ortho")
-            dc_coeff = dct_block[0, 0]
+            dc = dct_block[0, 0]
 
-            extracted_bits.append(1 if dc_coeff % 2 != 0 else 0)
+            extracted_bits.append(round(dc / Q) % 2)
 
         if len(extracted_bits) >= max_bits:
             break
@@ -75,40 +71,41 @@ def decode_watermark_dct(image_path: str, max_bits: int = 256) -> str:
     for i in range(0, len(extracted_bits) - 7, 8):
         byte = extracted_bits[i:i+8]
         char_val = int("".join(str(b) for b in byte), 2)
+        if char_val == 0:
+            break
         if 32 <= char_val <= 126:
             chars.append(chr(char_val))
-        elif char_val == 0:
-            break
         else:
             break
 
     return "".join(chars)
 
-
 def embed_printer_fingerprint(image_path: str, fingerprint_data: str, output_path: str) -> str:
     img = Image.open(image_path).convert("RGB")
     img_array = np.array(img, dtype=np.float32)
 
-    binary_data = "".join(format(ord(c), "08b") for c in fingerprint_data)
+    binary_data = "".join(format(ord(c), "08b") for c in fingerprint_data) + "00000000"
     bits = [int(b) for b in binary_data]
 
     h, w, _ = img_array.shape
-    margin_size = 20
+    margin_size = 16
     bit_idx = 0
+    Q = 8
 
     for i in range(h - margin_size, h):
-        for j in range(0, min(w, len(bits) * 2)):
+        for j in range(0, w):
             if bit_idx >= len(bits):
                 break
             pixel_val = img_array[i, j, 2]
-            target_bit = bits[bit_idx]
-            if target_bit == 1:
-                img_array[i, j, 2] = pixel_val if pixel_val % 2 == 1 else pixel_val + 1
-            else:
-                img_array[i, j, 2] = pixel_val if pixel_val % 2 == 0 else pixel_val - 1
-            img_array[i, j, 2] = np.clip(img_array[i, j, 2], 0, 255)
-            bit_idx += 2
-
+            bit = bits[bit_idx]
+            q_val = round(pixel_val / Q)
+            if q_val % 2 != bit:
+                if q_val > (pixel_val / Q):
+                    q_val -= 1
+                else:
+                    q_val += 1
+            img_array[i, j, 2] = np.clip(q_val * Q, 0, 255)
+            bit_idx += 1
         if bit_idx >= len(bits):
             break
 
@@ -116,23 +113,21 @@ def embed_printer_fingerprint(image_path: str, fingerprint_data: str, output_pat
     output.save(output_path, quality=95)
     return output_path
 
-
-def decode_printer_fingerprint(image_path: str, max_bits: int = 128) -> str:
+def decode_printer_fingerprint(image_path: str, max_bits: int = 512) -> str:
     img = Image.open(image_path).convert("RGB")
     img_array = np.array(img, dtype=np.float32)
 
     h, w, _ = img_array.shape
-    margin_size = 20
+    margin_size = 16
     extracted_bits = []
+    Q = 8
 
     for i in range(h - margin_size, h):
         for j in range(0, w):
             if len(extracted_bits) >= max_bits:
                 break
             pixel_val = img_array[i, j, 2]
-            extracted_bits.append(1 if pixel_val % 2 != 1 else 0)
-            extracted_bits.append(1 if pixel_val % 2 != 1 else 0)
-
+            extracted_bits.append(round(pixel_val / Q) % 2)
         if len(extracted_bits) >= max_bits:
             break
 
@@ -140,10 +135,10 @@ def decode_printer_fingerprint(image_path: str, max_bits: int = 128) -> str:
     for i in range(0, len(extracted_bits) - 7, 8):
         byte = extracted_bits[i:i+8]
         char_val = int("".join(str(b) for b in byte), 2)
+        if char_val == 0:
+            break
         if 32 <= char_val <= 126:
             chars.append(chr(char_val))
-        elif char_val == 0:
-            break
         else:
             break
 
