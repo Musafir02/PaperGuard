@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "api/index.py": {
-      "excludeFiles": "ops-webapp/**|backend/uploads/**|uploads/**|*.png|*.pdf|*.jpg"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/:path*",
