@@ -137,17 +137,23 @@ export default function TranslatePage() {
           </p>
           <div className="grid grid-cols-4 gap-3">
             {results.map((r) => (
-              <div key={r.language} className="bg-bg-card border border-border rounded-xl overflow-hidden">
+              <a
+                key={r.language}
+                href={`http://localhost:8000${r.image_url}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-bg-card border border-[#232329] rounded-xl overflow-hidden block hover:border-[#c2835e]/45 hover:-translate-y-0.5 transition-all duration-200"
+              >
                 <img src={`http://localhost:8000${r.image_url}`} alt={r.language}
                   className="w-full h-[120px] object-cover object-top" />
                 <div className="p-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-[13px] font-medium">{r.language}</span>
+                    <span className="text-[13px] font-medium text-white">{r.language}</span>
                     <span className="text-[10px] font-mono text-green bg-green-dim px-2 py-0.5 rounded">done</span>
                   </div>
-                  <p className="text-[10px] text-text-muted font-mono mt-1">{r.batch_id}</p>
+                  <p className="text-[10px] text-[#52525b] font-mono mt-1">{r.batch_id}</p>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
         </div>
