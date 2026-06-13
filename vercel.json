@@ -18,5 +18,10 @@
       "src": "/(.*)",
       "dest": "ops-webapp/$1"
     }
-  ]
+  ],
+  "functions": {
+    "backend/app/main.py": {
+      "excludeFiles": "ops-webapp/**|backend/uploads/**|uploads/**|*.png|*.pdf|*.jpg"
+    }
+  }
 }
