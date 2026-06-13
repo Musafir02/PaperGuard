@@ -43,6 +43,11 @@ async def get_center(center_id: str, db: AsyncSession = Depends(get_db)):
     )
     students = students_result.scalars().all()
 
+    invigilators = [
+        {"id": f"INV-{center_id}-01", "name": "Prof. R. K. Sharma", "status": "active"},
+        {"id": f"INV-{center_id}-02", "name": "Dr. Sneha Patil", "status": "active"},
+    ]
+
     return {
         "id": center.id,
         "name": center.name,
@@ -54,6 +59,7 @@ async def get_center(center_id: str, db: AsyncSession = Depends(get_db)):
         "latitude": center.latitude,
         "longitude": center.longitude,
         "students": [{"id": s.id, "roll_no": s.roll_no, "name": s.name, "center_id": s.center_id} for s in students],
+        "invigilators": invigilators,
     }
 
 
