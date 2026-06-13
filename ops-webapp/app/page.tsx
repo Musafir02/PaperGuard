@@ -57,9 +57,7 @@ export default function LoginPage() {
         />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#c2835e] to-[#915e41] flex items-center justify-center shadow-lg shadow-[#c2835e]/10 border border-[#c2835e]/30">
-            <span className="text-white text-sm font-bold font-mono tracking-tighter">PG</span>
-          </div>
+          <img src="/logo.png" alt="PaperGuard Logo" className="w-9 h-9 rounded-xl object-contain border border-[#232329] bg-[#101014]" />
           <div>
             <span className="text-xs font-mono text-[#a1a1aa] tracking-[0.25em] uppercase">PaperGuard</span>
             <span className="block text-[8px] font-mono text-[#c2835e] uppercase tracking-wider font-semibold">Active Shield</span>

@@ -71,9 +71,7 @@ export default function Sidebar() {
     <aside className="w-[220px] bg-[#0f0f12] border-r border-[#232329] flex flex-col h-screen sticky top-0">
       <div className="px-5 py-5 border-b border-[#232329]">
         <div className="flex items-center gap-2.5">
-          <div className="w-6 h-6 rounded bg-[#c2835e]/15 flex items-center justify-center border border-[#c2835e]/30">
-            <span className="text-[#c2835e] text-xs font-bold font-mono">PG</span>
-          </div>
+          <img src="/logo.png" alt="PaperGuard Logo" className="w-6 h-6 rounded object-contain border border-[#232329] bg-[#141418]" />
           <div>
             <h1 className="text-[13px] font-semibold tracking-wide text-[#e4e4e7]">PaperGuard</h1>
             <p className="text-[10px] text-[#52525b] font-mono uppercase tracking-widest">Ops Console</p>
