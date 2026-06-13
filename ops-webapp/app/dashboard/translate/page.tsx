@@ -18,46 +18,44 @@ export default function TranslatePage() {
   const run = async () => {
     setLoading(true);
     try {
-      const res = await api.translate({
-        master_paper: mockPaper,
-        languages: languages.split(",").map((l) => l.trim()),
-      });
+      const res = await api.translate({ master_paper: mockPaper, languages: languages.split(",").map((l) => l.trim()) });
       setResult(res);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">M1 — Translate</h1>
-      <p className="text-muted text-sm">Split master paper into per-language versions.</p>
+    <div className="p-8 space-y-5 max-w-[800px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Translate</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">Split master paper into per-language versions</p>
+      </div>
 
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
-        <div>
-          <label className="text-xs text-muted uppercase tracking-wider block mb-1">Languages (comma-separated)</label>
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Languages</label>
           <input
             type="text"
             value={languages}
             onChange={(e) => setLanguages(e.target.value)}
-            className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent"
+            className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary placeholder:text-text-muted/50 transition-colors"
+            placeholder="Hindi, English, Tamil"
           />
+          <p className="text-[10px] text-text-muted">Comma-separated list of target languages</p>
         </div>
         <button
           onClick={run}
           disabled={loading}
-          className="px-4 py-2 bg-accent text-white rounded text-sm font-mono hover:bg-accent-hover transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-40"
         >
           {loading ? "Translating..." : "Run Translation"}
         </button>
       </div>
 
       {result && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-3">Result</p>
-          <pre className="text-sm font-mono text-green overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Result</p>
+          <pre className="text-[12px] font-mono text-green whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
     </div>
