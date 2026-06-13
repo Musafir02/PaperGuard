@@ -1,4 +1,6 @@
 import os
+import json
+import httpx
 from PIL import Image, ImageDraw, ImageFont
 
 LANG_BANNERS = {
@@ -23,7 +25,7 @@ EXAM_LABELS = {
     "Telugu": {"title": "NEET 2025 (UG)", "set_label": "సెట్", "name_label": "పేరు", "roll_label": "రోల్ నం", "seat_label": "సీటు"},
     "Bengali": {"title": "NEET 2025 (UG)", "set_label": "সেট", "name_label": "নাম", "roll_label": "রোল", "seat_label": "সিট"},
     "Marathi": {"title": "NEET 2025 (UG)", "set_label": "सेट", "name_label": "नाव", "roll_label": "रोल नं", "seat_label": "बस्ता"},
-    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નામ", "roll_label": "રોલ", "seat_label": "સીટ"},
+    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નાม", "roll_label": "રોલ", "seat_label": "સીટ"},
     "Kannada": {"title": "NEET 2025 (UG)", "set_label": "ಸೆಟ್", "name_label": "ಹೆಸರು", "roll_label": "ರೋಲ್", "seat_label": "ಸೀಟ್"},
     "Malayalam": {"title": "NEET 2025 (UG)", "set_label": "സെറ്റ്", "name_label": "പേര്", "roll_label": "റോൾ", "seat_label": "സീറ്റ്"},
     "Odia": {"title": "NEET 2025 (UG)", "set_label": "ସେଟ୍", "name_label": "ନାମ", "roll_label": "ରୋଲ୍", "seat_label": "ସିଟ୍"},
@@ -31,14 +33,14 @@ EXAM_LABELS = {
     "Urdu": {"title": "NEET 2025 (UG)", "set_label": "سیٹ", "name_label": "نام", "roll_label": "رول نمبر", "seat_label": "سیٹ"},
 }
 
-TRANSLATED_QUESTIONS = {
+LOCAL_FALLBACK_QUESTIONS = {
     "Hindi": "प्रश्न 1. 4 ओम और 6 ओम के दो प्रतिरोधक 12V बैटरी के साथ श्रृंखला में जुड़े हुए हैं। सर्किट के माध्यम से प्रवाह क्या है?",
     "English": "Q1. Two resistors of 4 Ohm and 6 Ohm are connected in series with a 12V battery. What is the current through the circuit?",
     "Tamil": "கேள்வி 1. 4 ஓம் மற்றும் 6 ஓம் இரண்டு மின்தடையங்கள் 12V மின்கலத்துடன் தொடராக இணைக்கப்பட்டுள்ளன. மின்சுற்று வழியாக செல்லும் மின்னோட்டம் என்ன?",
-    "Telugu": "ప్రశ్న 1. 4 ఓం మరియు 6 ఓం రెండు నిరోధకాలు 12V బ్యాటరీతో సిరీస్‌లో అనుసంధանիਅబడి ఉన్నాయి. సర్క్యూట్ ద్వారా విద్యుత్ ప్రవాహం ఎంత?",
+    "Telugu": "ప్రశ్న 1. 4 ఓం మరియు 6 ఓం రెండు నిరోధకాలు 12V బ్యాటరీతో సిరీస్‌లో అనుసంధానించబడి ఉన్నాయి. సర్క్యూట్ ద్వారా విద్యుత్ ప్రవాహం ఎంత?",
     "Bengali": "প্রশ্ন ১. ৪ ওহম এবং ৬ ওহমের দুটি রোধক একটি ১২ভোল্ট ব্যাটারির সাথে শ্রেণীতে সংযুক্ত রয়েছে। সার্কিটের মধ্য দিয়ে প্রবাহিত তড়িৎপ্রবাহ কত?",
     "Marathi": "प्रश्न १. ४ ओहम आणि ६ ओहमचे दोन रोधक १२V बॅटरीसोबत एकसर जोडणीत जोडलेले आहेत. सर्किटमधील विद्युत प्रवाह किती आहे?",
-    "Gujarati": "પ્રશ્ન ૧. ૪ ઓહ્મ અને 6 ઓહ્મના બે અવરોધકો ૧૨V બેટરી સાથે શ્રેણીમાં જોડાયેલા છે. સર્કિટમાંથી વહેતો પ્રવાહ કેટલો છે?",
+    "Gujarati": "પ્રશ્ન ૧. ૪ ઓહ્મ અને 6 ઓહ્મના બે અવરોधકો ૧૨V બેટરી સાથે શ્રેણીમાં જોડાયેલા છે. સર્કિટમાંથી વહેતો પ્રવાહ કેટલો છે?",
     "Kannada": "ಪ್ರಶ್ನೆ 1. 4 ಓಮ್ ಮತ್ತು 6 ಓಮ್‌ನ ಎರಡು ರೋಧಕಗಳನ್ನು 12V ಬ್ಯಾಟರಿಯೊಂದಿಗೆ ಸರಣಿಯಲ್ಲಿ ಜೋಡಿಸಲಾಗಿದೆ. ಸರ್ಕ್ಯೂಟ್ ಮೂಲಕ ಹರಿಯುವ ವಿದ್ಯುತ್ ಪ್ರವಾಹ ಎಷ್ಟು?",
     "Malayalam": "ചോദ്യം 1. 4 ഓമിന്റെയും 6 ഓമിന്റെയും രണ്ട് റെസിസ്റ്ററുകൾ 12V ബാറ്ററിയുമായി ശ്രേണിയിൽ ഘടിപ്പിച്ചിരിക്കുന്നു. സർക്യൂട്ടിലൂടെയുള്ള കറന്റ് എത്രയാണ്?",
     "Odia": "ପ୍ରଶ୍ନ ୧. ୪ ଓମ୍ ଏବଂ ୬ ଓମ୍‌ର ଦୁଇଟି ପ୍ରତିରୋଧକ ଏକ ୧୨V ବ୍ୟାଟେରୀ ସହିତ ଶ୍ରେଣୀରେ ସଂଯୁକ୍ତ ଅଛି | ସର୍କିଟ୍ ମଧ୍ୟରେ ପ୍ରବାହିତ ବିଦ୍ୟୁତ୍ ପ୍ରବାହ କେତେ?",
@@ -46,16 +48,60 @@ TRANSLATED_QUESTIONS = {
     "Urdu": "سوال 1. 4 اوہم اور 6 اوہم کے دو مزاحم 12V بیٹری کے ساتھ سیریز میں جڑے ہوئے ہیں۔ سرکٹ سے گزرنے والا کرنٹ کتنا ہے؟"
 }
 
-def _get_font(size: int) -> ImageFont.FreeTypeFont:
-    for path in [
-        "C:/Windows/Fonts/nirmala.ttf",
+def _get_font(language: str, size: int) -> ImageFont.FreeTypeFont:
+    paths = []
+    if language in ["Hindi", "Marathi"]:
+        paths.append("C:/Windows/Fonts/mangal.ttf")
+        paths.append("C:/Windows/Fonts/kokila.ttf")
+        paths.append("C:/Windows/Fonts/utsaah.ttf")
+    paths.extend([
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/segoeui.ttf",
         "C:/Windows/Fonts/tahoma.ttf",
-    ]:
+    ])
+    for path in paths:
         if os.path.exists(path):
-            return ImageFont.truetype(path, size)
+            try:
+                return ImageFont.truetype(path, size)
+            except Exception:
+                continue
     return ImageFont.load_default()
+
+def translate_text_nvidia(question: str, target_lang: str) -> str:
+    api_key = os.getenv("NVIDIA_API_KEY")
+    base_url = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+    if not api_key:
+        return LOCAL_FALLBACK_QUESTIONS.get(target_lang, question)
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "meta/llama-3.1-70b-instruct",
+        "messages": [
+            {
+                "role": "user",
+                "content": f"Translate this competitive exam question into {target_lang}. Translate only the question text. Output ONLY the translated text, do not add any explanation, quotes or preamble:\n{question}"
+            }
+        ],
+        "temperature": 0.1,
+        "max_tokens": 512
+    }
+    
+    try:
+        r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=15.0)
+        if r.status_code == 200:
+            result = r.json()["choices"][0]["message"]["content"].strip()
+            if result.startswith('"') and result.endswith('"'):
+                result = result[1:-1]
+            if result.startswith("'") and result.endswith("'"):
+                result = result[1:-1]
+            return result
+    except Exception:
+        pass
+    return LOCAL_FALLBACK_QUESTIONS.get(target_lang, question)
 
 def render_translated_version(source_path: str, output_path: str, language: str):
     banner_info = LANG_BANNERS.get(language, {"bg": (100, 100, 100), "text": language})
@@ -71,20 +117,21 @@ def render_translated_version(source_path: str, output_path: str, language: str)
     draw = ImageDraw.Draw(canvas)
 
     draw.rectangle([0, 0, width, banner_h], fill=banner_info["bg"])
-    banner_font = _get_font(18)
+    banner_font = _get_font(language, 18)
     bbox = draw.textbbox((0, 0), banner_info["text"], font=banner_font)
     tw = bbox[2] - bbox[0]
     draw.text(((width - tw) // 2, (banner_h - (bbox[3] - bbox[1])) // 2), banner_info["text"], fill=(255, 255, 255), font=banner_font)
 
     draw.rectangle([0, banner_h, width, banner_h + metadata_h], fill=(245, 245, 245))
-    meta_font = _get_font(13)
+    meta_font = _get_font(language, 13)
     y = banner_h + 8
-    draw.text((16, y), f"{labels['title']}", fill=(30, 30, 30), font=_get_font(15))
+    draw.text((16, y), f"{labels['title']}", fill=(30, 30, 30), font=_get_font(language, 15))
     y += 22
     draw.text((16, y), f"{labels['set_label']}: NEET-2025-SET-A   |   {labels['name_label']}: Aarav Sharma   |   {labels['roll_label']}: 2024NEET04521   |   {labels['seat_label']}: A-12", fill=(80, 80, 80), font=meta_font)
 
-    question_text = TRANSLATED_QUESTIONS.get(language, TRANSLATED_QUESTIONS["English"])
-    q_font = _get_font(15)
+    source_question = "Q1. Two resistors of 4 Ohm and 6 Ohm are connected in series with a 12V battery. What is the current through the circuit?"
+    question_text = translate_text_nvidia(source_question, language)
+    q_font = _get_font(language, 15)
     
     words = question_text.split(" ")
     lines = []
@@ -105,7 +152,7 @@ def render_translated_version(source_path: str, output_path: str, language: str)
         draw.text((20, y_text), line, fill=(0, 0, 0), font=q_font)
         y_text += 25
 
-    stamp_font = _get_font(10)
+    stamp_font = _get_font(language, 10)
     stamp_text = f"PaperGuard · {language} Version"
     s_bbox = draw.textbbox((0, 0), stamp_text, font=stamp_font)
     sw = s_bbox[2] - s_bbox[0]
