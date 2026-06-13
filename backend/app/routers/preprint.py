@@ -14,9 +14,6 @@ from app.services.audit_chain import create_audit_event
 
 router = APIRouter(prefix="/api/v1/pipeline/preprint", tags=["preprint"])
 
-KEYSTORE: dict[str, bytes] = {}
-
-
 class PrePrintUnlockRequest(BaseModel):
     center_id: str
     totp_code: str
@@ -36,7 +33,9 @@ async def seal_paper(req: PrePrintSealRequest, db: AsyncSession = Depends(get_db
 
     key = generate_aes_key()
     encrypted = encrypt_data(req.paper_data.encode(), key)
-    KEYSTORE[req.center_id] = key
+
+    center.encrypted_paper_key = base64.b64encode(key).decode()
+    center.encrypted_paper_data = json.dumps(encrypted)
 
     paper_hash = compute_sha256(req.paper_data.encode())
 
@@ -44,6 +43,7 @@ async def seal_paper(req: PrePrintSealRequest, db: AsyncSession = Depends(get_db
         db, "PAPER_SEALED", center_id=req.center_id,
         payload=f"hash={paper_hash}",
     )
+    await db.commit()
 
     return {
         "status": "sealed",
@@ -66,7 +66,7 @@ async def unlock_paper(req: PrePrintUnlockRequest, db: AsyncSession = Depends(ge
     if not verify_totp(center.totp_secret, req.totp_code):
         raise HTTPException(status_code=401, detail="Invalid TOTP code")
 
-    if req.center_id not in KEYSTORE:
+    if not center.encrypted_paper_key:
         raise HTTPException(status_code=400, detail="No sealed paper for this center")
 
     center.phase = CenterPhase.DECRYPTED
@@ -105,5 +105,5 @@ async def get_center_state(center_id: str, db: AsyncSession = Depends(get_db)):
     return {
         "center_id": center_id,
         "phase": center.phase.value,
-        "has_paper": center_id in KEYSTORE,
+        "has_paper": bool(center.encrypted_paper_key),
     }
