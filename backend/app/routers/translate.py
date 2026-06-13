@@ -1,10 +1,10 @@
 import os
 import uuid
-import shutil
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.services.audit_chain import create_audit_event
+from app.services.translate_render import render_translated_version
 
 router = APIRouter(prefix="/api/v1/pipeline/translate", tags=["translate"])
 
@@ -33,7 +33,7 @@ async def translate_paper(
         batch_id = f"TRANS-{uuid.uuid4().hex[:8].upper()}"
         out_filename = f"trans_{lang.lower()}_{uuid.uuid4().hex[:6]}.png"
         out_path = os.path.join(UPLOAD_DIR, out_filename)
-        shutil.copy2(source_path, out_path)
+        render_translated_version(source_path, out_path, lang)
 
         results.append({
             "language": lang,
