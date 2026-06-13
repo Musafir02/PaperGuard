@@ -20,3 +20,6 @@ Thumbs.db
 *.md
 *.pdf
 paperguard.db-journal
+
+.vercel
+.env*

@@ -2,7 +2,11 @@ import enum
 from datetime import datetime
 from sqlalchemy import String, Integer, Float, DateTime, Enum, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from api.database import Base
+
+try:
+    from api.database import Base
+except ImportError:
+    from database import Base
 
 class CenterPhase(str, enum.Enum):
     SEALED = "SEALED"
@@ -54,7 +58,7 @@ class Student(Base):
     device_id: Mapped[str] = mapped_column(String(100), default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    center: Mapped["Center"] = relationship(back_populates="students")
+    center: Mapped["Center"] = relationship(back_populates="center")
     watermarks: Mapped[list["WatermarkRecord"]] = relationship(back_populates="student")
 
 class WatermarkRecord(Base):

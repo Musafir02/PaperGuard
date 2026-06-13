@@ -9,21 +9,38 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.database import init_db, get_db
-from api.models import (
-    Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
-    CenterPhase, RiskLevel, AlertStatus
-)
-from api.services.crypto import encrypt_data, decrypt_data
-from api.services.shamir import split_key, combine_keys
-from api.services.totp_lock import generate_totp_secret, verify_totp_code
-from api.services.risk_scorer import calculate_risk_score
-from api.services.audit_chain import create_audit_event, verify_chain
-from api.services.watermark import (
-    embed_watermark_dct, decode_watermark_dct,
-    embed_printer_fingerprint, decode_printer_fingerprint
-)
-from api.services.translate import render_translated_version
+try:
+    from api.database import init_db, get_db
+    from api.models import (
+        Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
+        CenterPhase, RiskLevel, AlertStatus
+    )
+    from api.services.crypto import encrypt_data, decrypt_data
+    from api.services.shamir import split_key, combine_keys
+    from api.services.totp_lock import generate_totp_secret, verify_totp_code
+    from api.services.risk_scorer import calculate_risk_score
+    from api.services.audit_chain import create_audit_event, verify_chain
+    from api.services.watermark import (
+        embed_watermark_dct, decode_watermark_dct,
+        embed_printer_fingerprint, decode_printer_fingerprint
+    )
+    from api.services.translate import render_translated_version
+except ImportError:
+    from database import init_db, get_db
+    from models import (
+        Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
+        CenterPhase, RiskLevel, AlertStatus
+    )
+    from services.crypto import encrypt_data, decrypt_data
+    from services.shamir import split_key, combine_keys
+    from services.totp_lock import generate_totp_secret, verify_totp_code
+    from services.risk_scorer import calculate_risk_score
+    from services.audit_chain import create_audit_event, verify_chain
+    from services.watermark import (
+        embed_watermark_dct, decode_watermark_dct,
+        embed_printer_fingerprint, decode_printer_fingerprint
+    )
+    from services.translate import render_translated_version
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
