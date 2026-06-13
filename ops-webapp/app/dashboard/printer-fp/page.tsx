@@ -21,58 +21,55 @@ export default function PrinterFpPage() {
       fd.append("image", file);
       const params = new URLSearchParams({ center_id: centerId, press_id: pressId, batch_id: batchId, time_window: timeWindow });
       const res = await fetch(`http://localhost:8000/api/v1/pipeline/watermark/printer-fp?${params}`, { method: "POST", body: fd });
-      const data = await res.json();
-      setResult(data);
+      setResult(await res.json());
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">M5 — Printer Fingerprint</h1>
-      <p className="text-muted text-sm">Embed invisible margin micro-pattern with batch ID, press, and time window.</p>
+    <div className="p-8 space-y-5 max-w-[800px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Printer Fingerprint</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">Invisible margin micro-pattern with batch ID</p>
+      </div>
 
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Center ID</label>
-            <input value={centerId} onChange={(e) => setCenterId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Press ID</label>
-            <input value={pressId} onChange={(e) => setPressId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Batch ID</label>
-            <input value={batchId} onChange={(e) => setBatchId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
-          </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Time Window</label>
-            <input value={timeWindow} onChange={(e) => setTimeWindow(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
-          </div>
+          {[
+            { label: "Center ID", value: centerId, set: setCenterId },
+            { label: "Press ID", value: pressId, set: setPressId },
+            { label: "Batch ID", value: batchId, set: setBatchId },
+            { label: "Time Window", value: timeWindow, set: setTimeWindow },
+          ].map((f) => (
+            <div key={f.label} className="space-y-1.5">
+              <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">{f.label}</label>
+              <input value={f.value} onChange={(e) => f.set(e.target.value)}
+                className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors" />
+            </div>
+          ))}
         </div>
 
-        <div>
-          <label className="text-xs text-muted uppercase tracking-wider block mb-1">Paper Image</label>
-          <input ref={inputRef} type="file" accept="image/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="w-full text-sm text-muted file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:bg-accent file:text-white file:cursor-pointer" />
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Paper Image</label>
+          <div className="border border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-accent/30 transition-colors"
+            onClick={() => inputRef.current?.click()}>
+            <input ref={inputRef} type="file" accept="image/*" className="hidden"
+              onChange={(e) => setFile(e.target.files?.[0] || null)} />
+            {file ? <p className="text-[12px] font-mono text-accent">{file.name}</p> :
+              <p className="text-[12px] text-text-muted">Click to select image</p>}
+          </div>
         </div>
 
         <button onClick={embed} disabled={loading || !file}
-          className="px-4 py-2 bg-accent text-white rounded text-sm font-mono hover:bg-accent-hover transition-colors disabled:opacity-50">
+          className="px-4 py-2 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-40">
           {loading ? "Embedding..." : "Embed Fingerprint"}
         </button>
       </div>
 
       {result && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-2">Result</p>
-          <pre className="text-sm font-mono text-green overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Result</p>
+          <pre className="text-[12px] font-mono text-green whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
     </div>
