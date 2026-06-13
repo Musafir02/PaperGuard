@@ -59,7 +59,7 @@ async def watermark_paper(
         "roll_no": roll_no,
         "center_id": center_id,
         "batch_id": batch_id,
-        "image_path": output_path,
+        "image_url": f"/uploads/{filename}",
     }
 
 
@@ -94,7 +94,7 @@ async def embed_printer_fingerprint_endpoint(
         "press_id": press_id,
         "batch_id": batch_id,
         "time_window": time_window,
-        "image_path": output_path,
+        "image_url": f"/uploads/{filename}",
     }
 
 

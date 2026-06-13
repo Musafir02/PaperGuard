@@ -10,7 +10,7 @@ export default function PrinterFpPage() {
   const [timeWindow, setTimeWindow] = useState("09:00-11:00");
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<{ batch_id: string; press_id: string; time_window: string } | null>(null);
+  const [result, setResult] = useState<{ batch_id: string; press_id: string; time_window: string; image_url: string } | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,7 +34,7 @@ export default function PrinterFpPage() {
       const params = new URLSearchParams({ center_id: centerId, press_id: pressId, batch_id: bid, time_window: timeWindow });
       const res = await fetch(`http://localhost:8000/api/v1/pipeline/watermark/printer-fp?${params}`, { method: "POST", body: fd });
       const data = await res.json();
-      setResult({ batch_id: data.batch_id, press_id: data.press_id, time_window: data.time_window });
+      setResult({ batch_id: data.batch_id, press_id: data.press_id, time_window: data.time_window, image_url: data.image_url });
     } catch (e) {
       console.error(e);
     } finally {
@@ -115,19 +115,25 @@ export default function PrinterFpPage() {
 
           {result && (
             <div className="bg-green-dim border border-green/20 rounded-xl p-4 animate-fade-in">
-              <p className="text-[10px] font-medium text-green uppercase tracking-wider mb-2">Fingerprint Embedded</p>
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-[10px] text-text-muted">Press</p>
-                  <p className="text-[13px] font-mono font-medium text-green">{result.press_id}</p>
+              <p className="text-[10px] font-medium text-green uppercase tracking-wider mb-3">Fingerprint Embedded</p>
+              <div className="flex gap-4">
+                <div className="flex-1 grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-[10px] text-text-muted">Press</p>
+                    <p className="text-[13px] font-mono font-medium text-green">{result.press_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted">Batch</p>
+                    <p className="text-[13px] font-mono font-medium text-green">{result.batch_id}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-text-muted">Window</p>
+                    <p className="text-[13px] font-mono font-medium text-green">{result.time_window}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] text-text-muted">Batch</p>
-                  <p className="text-[13px] font-mono font-medium text-green">{result.batch_id}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-text-muted">Window</p>
-                  <p className="text-[13px] font-mono font-medium text-green">{result.time_window}</p>
+                <div className="w-[140px]">
+                  <img src={`http://localhost:8000${result.image_url}`} alt="Fingerprinted"
+                    className="w-full rounded-lg border border-green/20" />
                 </div>
               </div>
             </div>

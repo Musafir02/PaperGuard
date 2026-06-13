@@ -14,9 +14,9 @@ export default function WatermarkPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [result, setResult] = useState<{ batch_id: string; image_path: string } | null>(null);
+  const [result, setResult] = useState<{ batch_id: string; image_url: string } | null>(null);
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState<{ roll_no: string; batch_id: string; time: string }[]>([]);
+  const [history, setHistory] = useState<{ roll_no: string; batch_id: string; image_url: string; time: string }[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,9 +45,9 @@ export default function WatermarkPage() {
     setLoading(true);
     try {
       const res = await api.watermark(selectedStudent.roll_no, selectedStudent.center_id, file);
-      setResult({ batch_id: res.batch_id, image_path: res.image_path });
+      setResult({ batch_id: res.batch_id, image_url: res.image_url });
       setHistory((prev) => [
-        { roll_no: selectedStudent.roll_no, batch_id: res.batch_id, time: new Date().toLocaleTimeString() },
+        { roll_no: selectedStudent.roll_no, batch_id: res.batch_id, image_url: res.image_url, time: new Date().toLocaleTimeString() },
         ...prev,
       ]);
     } catch (e) {
@@ -138,15 +138,16 @@ export default function WatermarkPage() {
 
           {result && (
             <div className="bg-green-dim border border-green/20 rounded-xl p-4 animate-fade-in">
-              <p className="text-[10px] font-medium text-green uppercase tracking-wider mb-2">Watermark Embedded</p>
+              <p className="text-[10px] font-medium text-green uppercase tracking-wider mb-3">Watermark Embedded</p>
               <div className="flex gap-6">
-                <div>
-                  <p className="text-[10px] text-text-muted">Batch ID</p>
+                <div className="flex-1">
+                  <p className="text-[10px] text-text-muted mb-1">Batch ID</p>
                   <p className="text-[13px] font-mono font-medium text-green">{result.batch_id}</p>
                 </div>
-                <div>
-                  <p className="text-[10px] text-text-muted">Output</p>
-                  <p className="text-[12px] font-mono text-text-secondary truncate max-w-[300px]">{result.image_path}</p>
+                <div className="w-[180px]">
+                  <p className="text-[10px] text-text-muted mb-1">Watermarked Image</p>
+                  <img src={`http://localhost:8000${result.image_url}`} alt="Watermarked"
+                    className="w-full rounded-lg border border-green/20" />
                 </div>
               </div>
             </div>
@@ -159,7 +160,8 @@ export default function WatermarkPage() {
           <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Recent Watermarks</p>
           <div className="space-y-1.5">
             {history.map((h, i) => (
-              <div key={i} className="flex items-center gap-4 text-[12px] py-1.5 border-b border-border/30 last:border-0">
+              <div key={i} className="flex items-center gap-4 text-[12px] py-2 border-b border-border/30 last:border-0">
+                <img src={`http://localhost:8000${h.image_url}`} alt="" className="w-10 h-10 rounded object-cover" />
                 <span className="font-mono text-accent">{h.roll_no}</span>
                 <span className="font-mono text-text-muted">{h.batch_id}</span>
                 <span className="text-text-muted ml-auto">{h.time}</span>

@@ -1,8 +1,14 @@
 from contextlib import asynccontextmanager
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.database import init_db
 from app.routers import auth, centers, translate, watermark, preprint, killswitch, audit, telegram_hunter, translator_shield
+
+
+UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 
 @asynccontextmanager
@@ -35,6 +41,8 @@ app.include_router(killswitch.router)
 app.include_router(audit.router)
 app.include_router(telegram_hunter.router)
 app.include_router(translator_shield.router)
+
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 
 @app.get("/api/v1/health")
