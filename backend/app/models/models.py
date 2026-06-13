@@ -40,6 +40,8 @@ class Center(Base):
     risk_level: Mapped[RiskLevel] = mapped_column(Enum(RiskLevel), default=RiskLevel.PASS)
     totp_secret: Mapped[str] = mapped_column(String(64), default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    encrypted_paper_key: Mapped[str] = mapped_column(Text, default="")
+    encrypted_paper_data: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
     students: Mapped[list["Student"]] = relationship(back_populates="center")
