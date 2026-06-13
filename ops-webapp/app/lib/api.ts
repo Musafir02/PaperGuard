@@ -15,8 +15,8 @@ async function request(path: string, options?: RequestInit) {
 export const api = {
   health: () => request("/api/v1/health"),
 
-  login: (data: { invigilator_id: string; center_id: string; device_id: string }) =>
-    request("/api/v1/auth/invigilator", { method: "POST", body: JSON.stringify(data) }),
+  login: (data: { username: string; password?: string; role: string; center_id?: string }) =>
+    request("/api/v1/auth/login", { method: "POST", body: JSON.stringify(data) }),
 
   getCenters: () => request("/api/v1/center"),
   getCenter: (id: string) => request(`/api/v1/center/${id}`),
@@ -63,4 +63,6 @@ export const api = {
     request("/api/v1/pipeline/translator-shield/issue", { method: "POST", body: JSON.stringify(data) }),
   verifyShard: (translatorId: string, deviceId: string) =>
     request(`/api/v1/pipeline/translator-shield/verify/${translatorId}?device_id=${deviceId}`),
+  combineShards: () =>
+    request("/api/v1/pipeline/translator-shield/combine", { method: "POST" }),
 };
