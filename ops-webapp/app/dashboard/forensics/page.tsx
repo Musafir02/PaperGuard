@@ -11,7 +11,7 @@ interface DecodeResult {
 export default function ForensicsPage() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<DecodeResult | null>(null);
-  const [traceTime, setTraceTime] = useState<number>(0);
+  const [traceTime, setTraceTime] = useState(0);
   const [loading, setLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -19,99 +19,99 @@ export default function ForensicsPage() {
     if (!file) return;
     setLoading(true);
     const start = performance.now();
-    try {
-      const res = await api.decodeImage(file);
-      setResult(res);
-      setTraceTime(Math.round(performance.now() - start));
-    } catch (e) { console.error(e); }
+    try { setResult(await api.decodeImage(file)); setTraceTime(Math.round(performance.now() - start)); }
+    catch (e) { console.error(e); }
     finally { setLoading(false); }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-8 space-y-5 max-w-[900px] animate-fade-in">
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-mono font-bold">Forensics — Decode</h1>
-          <p className="text-muted text-sm mt-1">Upload a leaked image to extract watermark + printer fingerprint.</p>
+          <h1 className="text-lg font-semibold">Forensics</h1>
+          <p className="text-[12px] text-text-muted mt-0.5">Upload leaked image to extract watermark and fingerprint</p>
         </div>
         {traceTime > 0 && (
           <div className="text-right">
-            <p className="text-xs text-muted uppercase tracking-wider">Trace Time</p>
-            <p className="text-2xl font-mono font-bold text-accent">{traceTime}ms</p>
+            <p className="text-[10px] text-text-muted uppercase tracking-wider">Trace Time</p>
+            <p className="text-xl font-semibold font-mono text-accent">{traceTime}<span className="text-[11px] text-text-muted font-normal">ms</span></p>
           </div>
         )}
       </div>
 
-      <div className="bg-card border border-border rounded-lg p-6 space-y-4">
-        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
+        <div
+          className="border border-dashed border-border rounded-xl p-10 text-center cursor-pointer hover:border-accent/30 transition-colors"
+          onClick={() => inputRef.current?.click()}
+        >
           <input ref={inputRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] || null)} />
           {file ? (
             <div>
-              <p className="text-sm font-mono text-accent">{file.name}</p>
-              <p className="text-xs text-muted mt-1">{(file.size / 1024).toFixed(1)} KB</p>
+              <p className="text-[13px] font-mono text-accent">{file.name}</p>
+              <p className="text-[11px] text-text-muted mt-1">{(file.size / 1024).toFixed(1)} KB</p>
             </div>
           ) : (
-            <p className="text-muted text-sm">Drag & drop or click to upload</p>
+            <div>
+              <div className="w-10 h-10 rounded-lg bg-bg-primary border border-border flex items-center justify-center mx-auto mb-3">
+                <span className="text-text-muted text-lg">↑</span>
+              </div>
+              <p className="text-[13px] text-text-secondary">Drop image here or click to browse</p>
+              <p className="text-[11px] text-text-muted mt-1">JPEG, PNG — max 25 MB</p>
+            </div>
           )}
-          <button onClick={() => inputRef.current?.click()}
-            className="mt-3 px-4 py-2 text-xs font-mono border border-border rounded hover:bg-white/5 transition-colors">
-            Select Image
-          </button>
         </div>
 
         <button onClick={decode} disabled={loading || !file}
-          className="w-full px-4 py-3 bg-accent text-white rounded text-sm font-mono hover:bg-accent-hover transition-colors disabled:opacity-50">
+          className="w-full py-2.5 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-40">
           {loading ? "Decoding..." : "Decode Watermark & Fingerprint"}
         </button>
       </div>
 
       {result && (
-        <div className="space-y-4">
-          <div className={`bg-card border rounded-lg p-4 ${result.watermark.decoded ? "border-green" : "border-border"}`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-muted uppercase tracking-wider">Watermark Decode</p>
-              <span className={`text-sm font-mono font-bold ${result.watermark.decoded ? "text-green" : "text-red"}`}>
+        <div className="space-y-3 animate-fade-in">
+          <div className={`bg-bg-card border rounded-xl p-5 ${result.watermark.decoded ? "border-green/30" : "border-border"}`}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider">Watermark</p>
+              <span className={`text-[12px] font-mono font-semibold ${result.watermark.decoded ? "text-green" : "text-text-muted"}`}>
                 {result.watermark.decoded ? "MATCH FOUND" : "NO MATCH"}
               </span>
             </div>
             {result.watermark.decoded && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="flex gap-8">
                 <div>
-                  <p className="text-xs text-muted">Roll Number</p>
-                  <p className="text-lg font-mono font-bold text-accent">{result.watermark.roll_no || result.watermark.data}</p>
+                  <p className="text-[10px] text-text-muted uppercase tracking-wider mb-0.5">Roll Number</p>
+                  <p className="text-base font-mono font-semibold text-accent">{result.watermark.roll_no || result.watermark.data}</p>
                 </div>
                 {result.watermark.center_id && (
                   <div>
-                    <p className="text-xs text-muted">Center ID</p>
-                    <p className="text-lg font-mono font-bold">{result.watermark.center_id}</p>
+                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-0.5">Center</p>
+                    <p className="text-base font-mono font-semibold">{result.watermark.center_id}</p>
                   </div>
                 )}
               </div>
             )}
           </div>
 
-          <div className={`bg-card border rounded-lg p-4 ${result.fingerprint.decoded ? "border-green" : "border-border"}`}>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-xs text-muted uppercase tracking-wider">Printer Fingerprint</p>
-              <span className={`text-sm font-mono font-bold ${result.fingerprint.decoded ? "text-green" : "text-red"}`}>
+          <div className={`bg-bg-card border rounded-xl p-5 ${result.fingerprint.decoded ? "border-green/30" : "border-border"}`}>
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider">Printer Fingerprint</p>
+              <span className={`text-[12px] font-mono font-semibold ${result.fingerprint.decoded ? "text-green" : "text-text-muted"}`}>
                 {result.fingerprint.decoded ? "DECODED" : "NO MATCH"}
               </span>
             </div>
             {result.fingerprint.decoded && (
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-xs text-muted">Press ID</p>
-                  <p className="text-sm font-mono font-bold">{result.fingerprint.press_id || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted">Batch ID</p>
-                  <p className="text-sm font-mono font-bold">{result.fingerprint.batch_id || "—"}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-muted">Time Window</p>
-                  <p className="text-sm font-mono font-bold">{result.fingerprint.time_window || "—"}</p>
-                </div>
+              <div className="flex gap-8">
+                {[
+                  { label: "Press", value: result.fingerprint.press_id },
+                  { label: "Batch", value: result.fingerprint.batch_id },
+                  { label: "Window", value: result.fingerprint.time_window },
+                ].filter(f => f.value).map((f) => (
+                  <div key={f.label}>
+                    <p className="text-[10px] text-text-muted uppercase tracking-wider mb-0.5">{f.label}</p>
+                    <p className="text-[13px] font-mono font-medium">{f.value}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
