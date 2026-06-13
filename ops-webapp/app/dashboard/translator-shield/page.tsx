@@ -31,55 +31,57 @@ export default function TranslatorShieldPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-xl font-mono font-bold">M3 — Translator Shield</h1>
-      <p className="text-muted text-sm">Issue Shamir Secret Sharing shards. Each translator sees only their section.</p>
+    <div className="p-8 space-y-5 max-w-[800px] animate-fade-in">
+      <div>
+        <h1 className="text-lg font-semibold">Translator Shield</h1>
+        <p className="text-[12px] text-text-muted mt-0.5">Shamir Secret Sharing — each translator sees only their section</p>
+      </div>
 
-      <div className="bg-card border border-border rounded-lg p-4 space-y-4">
+      <div className="bg-bg-card border border-border rounded-xl p-5 space-y-4">
         <div className="grid grid-cols-3 gap-4">
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Translator ID</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Translator ID</label>
             <input value={translatorId} onChange={(e) => setTranslatorId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors" />
           </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Section</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Section</label>
             <input value={section} onChange={(e) => setSection(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors" />
           </div>
-          <div>
-            <label className="text-xs text-muted uppercase tracking-wider block mb-1">Device ID</label>
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Device ID</label>
             <input value={deviceId} onChange={(e) => setDeviceId(e.target.value)}
-              className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
+              className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors" />
           </div>
         </div>
-        <div>
-          <label className="text-xs text-muted uppercase tracking-wider block mb-1">Shard Data</label>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-medium text-text-muted uppercase tracking-wider">Shard Data</label>
           <textarea value={shardData} onChange={(e) => setShardData(e.target.value)} rows={3}
-            className="w-full bg-background border border-border rounded px-3 py-2 text-sm font-mono focus:outline-none focus:border-accent" />
+            className="w-full bg-bg-primary border border-border rounded-lg px-3 py-2 text-[13px] font-mono text-text-primary transition-colors resize-none" />
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <button onClick={issue} disabled={loading}
-            className="px-4 py-2 bg-accent text-white rounded text-sm font-mono hover:bg-accent-hover transition-colors disabled:opacity-50">
+            className="px-4 py-2 bg-accent text-white rounded-lg text-[12px] font-medium hover:bg-accent-hover transition-colors disabled:opacity-40">
             {loading ? "Issuing..." : "Issue Shard"}
           </button>
           <button onClick={verify} disabled={loading}
-            className="px-4 py-2 border border-border rounded text-sm font-mono hover:bg-white/5 transition-colors disabled:opacity-50">
+            className="px-4 py-2 border border-border rounded-lg text-[12px] font-medium text-text-secondary hover:bg-bg-hover transition-colors disabled:opacity-40">
             Verify Access
           </button>
         </div>
       </div>
 
       {result && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-2">Issue Result</p>
-          <pre className="text-sm font-mono text-green overflow-x-auto">{JSON.stringify(result, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Issue Result</p>
+          <pre className="text-[12px] font-mono text-green whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
       )}
       {verifyResult && (
-        <div className="bg-card border border-border rounded-lg p-4">
-          <p className="text-xs text-muted uppercase tracking-wider mb-2">Verify Result</p>
-          <pre className="text-sm font-mono text-blue overflow-x-auto">{JSON.stringify(verifyResult, null, 2)}</pre>
+        <div className="bg-bg-card border border-border rounded-xl p-5">
+          <p className="text-[10px] font-medium text-text-muted uppercase tracking-wider mb-3">Verify Result</p>
+          <pre className="text-[12px] font-mono text-blue whitespace-pre-wrap">{JSON.stringify(verifyResult, null, 2)}</pre>
         </div>
       )}
     </div>
