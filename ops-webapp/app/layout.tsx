@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PaperGuard — Ops Console",
+  title: "PaperGuard",
   description: "Exam paper security pipeline",
 };
 
@@ -25,9 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex">
+      <body className="min-h-full flex bg-bg-primary text-text-primary">
         <Sidebar />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-auto min-h-screen">{children}</main>
       </body>
     </html>
   );
