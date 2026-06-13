@@ -1,4 +1,3 @@
-import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,15 +8,10 @@ from app.services.audit_chain import create_audit_event
 
 router = APIRouter(prefix="/api/v1/killswitch", tags=["killswitch"])
 
-
 class KillSwitchRequest(BaseModel):
     center_id: str
     mode: str
     officer_token: str
-
-
-KILL_SWITCH_LOG: dict[str, dict] = {}
-
 
 @router.post("/{center_id}")
 async def activate_kill_switch(
@@ -44,20 +38,8 @@ async def activate_kill_switch(
     if req.mode not in valid_modes:
         raise HTTPException(status_code=400, detail="Invalid mode. Use PRE_PRINT or POST_PRINT")
 
-    if center.phase not in valid_modes[req.mode]:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Mode {req.mode} not valid for center in {center.phase.value} phase",
-        )
-
     center.is_active = False
     await db.commit()
-
-    KILL_SWITCH_LOG[center_id] = {
-        "mode": req.mode,
-        "activated_at": str(__import__("datetime").datetime.utcnow()),
-        "phase_at_activation": center.phase.value,
-    }
 
     await create_audit_event(
         db, "KILL_SWITCH_ACTIVATED", center_id=center_id,
@@ -71,9 +53,15 @@ async def activate_kill_switch(
         "message": f"All terminals at center {center_id} are now locked",
     }
 
-
 @router.get("/status/{center_id}")
-async def kill_switch_status(center_id: str):
-    if center_id in KILL_SWITCH_LOG:
-        return {"locked": True, **KILL_SWITCH_LOG[center_id]}
-    return {"locked": False}
+async def kill_switch_status(center_id: str, db: AsyncSession = Depends(get_db)):
+    result = await db.execute(select(Center).where(Center.id == center_id))
+    center = result.scalar_one_or_none()
+    if not center:
+        raise HTTPException(status_code=404, detail="Center not found")
+        
+    return {
+        "locked": not center.is_active,
+        "center_id": center_id,
+        "phase": center.phase.value
+    }
