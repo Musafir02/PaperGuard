@@ -1,4 +1,5 @@
 import os
+import base64
 import json
 import httpx
 from PIL import Image, ImageDraw, ImageFont
@@ -25,27 +26,12 @@ EXAM_LABELS = {
     "Telugu": {"title": "NEET 2025 (UG)", "set_label": "సెట్", "name_label": "పేరు", "roll_label": "రోల్ నం", "seat_label": "సీటు"},
     "Bengali": {"title": "NEET 2025 (UG)", "set_label": "সেট", "name_label": "নাম", "roll_label": "রোল", "seat_label": "সিট"},
     "Marathi": {"title": "NEET 2025 (UG)", "set_label": "सेट", "name_label": "नाव", "roll_label": "रोल नं", "seat_label": "बस्ता"},
-    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નાม", "roll_label": "રોલ", "seat_label": "સીટ"},
+    "Gujarati": {"title": "NEET 2025 (UG)", "set_label": "સેટ", "name_label": "નામ", "roll_label": "રોલ", "seat_label": "સીਟ"},
     "Kannada": {"title": "NEET 2025 (UG)", "set_label": "ಸೆಟ್", "name_label": "ಹೆಸರು", "roll_label": "ರೋಲ್", "seat_label": "ಸೀಟ್"},
     "Malayalam": {"title": "NEET 2025 (UG)", "set_label": "സെറ്റ്", "name_label": "പേര്", "roll_label": "റോൾ", "seat_label": "സീറ്റ്"},
     "Odia": {"title": "NEET 2025 (UG)", "set_label": "ସେଟ୍", "name_label": "ନାମ", "roll_label": "ରୋଲ୍", "seat_label": "ସିଟ୍"},
     "Punjabi": {"title": "NEET 2025 (UG)", "set_label": "ਸੈੱਟ", "name_label": "ਨਾਮ", "roll_label": "ਰੋਲ", "seat_label": "ਸੀਟ"},
     "Urdu": {"title": "NEET 2025 (UG)", "set_label": "سیٹ", "name_label": "نام", "roll_label": "رول نمبر", "seat_label": "سیٹ"},
-}
-
-LOCAL_FALLBACK_QUESTIONS = {
-    "Hindi": "प्रश्न 1. 4 ओम और 6 ओम के दो प्रतिरोधक 12V बैटरी के साथ श्रृंखला में जुड़े हुए हैं। सर्किट के माध्यम से प्रवाह क्या है?",
-    "English": "Q1. Two resistors of 4 Ohm and 6 Ohm are connected in series with a 12V battery. What is the current through the circuit?",
-    "Tamil": "கேள்வி 1. 4 ஓம் மற்றும் 6 ஓம் இரண்டு மின்தடையங்கள் 12V மின்கலத்துடன் தொடராக இணைக்கப்பட்டுள்ளன. மின்சுற்று வழியாக செல்லும் மின்னோட்டம் என்ன?",
-    "Telugu": "ప్రశ్న 1. 4 ఓం మరియు 6 ఓం రెండు నిరోధకాలు 12V బ్యాటరీతో సిరీస్‌లో అనుసంధానించబడి ఉన్నాయి. సర్క్యూట్ ద్వారా విద్యుత్ ప్రవాహం ఎంత?",
-    "Bengali": "প্রশ্ন ১. ৪ ওহম এবং ৬ ওহমের দুটি রোধক একটি ১২ভোল্ট ব্যাটারির সাথে শ্রেণীতে সংযুক্ত রয়েছে। সার্কিটের মধ্য দিয়ে প্রবাহিত তড়িৎপ্রবাহ কত?",
-    "Marathi": "प्रश्न १. ४ ओहम आणि ६ ओहमचे दोन रोधक १२V बॅटरीसोबत एकसर जोडणीत जोडलेले आहेत. सर्किटमधील विद्युत प्रवाह किती आहे?",
-    "Gujarati": "પ્રશ્ન ૧. ૪ ઓહ્મ અને 6 ઓહ્મના બે અવરોधકો ૧૨V બેટરી સાથે શ્રેણીમાં જોડાયેલા છે. સર્કિટમાંથી વહેતો પ્રવાહ કેટલો છે?",
-    "Kannada": "ಪ್ರಶ್ನೆ 1. 4 ಓಮ್ ಮತ್ತು 6 ಓಮ್‌ನ ಎರಡು ರೋಧಕಗಳನ್ನು 12V ಬ್ಯಾಟರಿಯೊಂದಿಗೆ ಸರಣಿಯಲ್ಲಿ ಜೋಡಿಸಲಾಗಿದೆ. ಸರ್ಕ್ಯೂಟ್ ಮೂಲಕ ಹರಿಯುವ ವಿದ್ಯುತ್ ಪ್ರವಾಹ ಎಷ್ಟು?",
-    "Malayalam": "ചോദ്യം 1. 4 ഓമിന്റെയും 6 ഓമിന്റെയും രണ്ട് റെസിസ്റ്ററുകൾ 12V ബാറ്ററിയുമായി ശ്രേണിയിൽ ഘടിപ്പിച്ചിരിക്കുന്നു. സർക്യൂട്ടിലൂടെയുള്ള കറന്റ് എത്രയാണ്?",
-    "Odia": "ପ୍ରଶ୍ନ ୧. ୪ ଓମ୍ ଏବଂ ୬ ଓମ୍‌ର ଦୁଇଟି ପ୍ରତିରୋଧକ ଏକ ୧୨V ବ୍ୟାଟେରୀ ସହିତ ଶ୍ରେଣୀରେ ସଂଯୁକ୍ତ ଅଛି | ସର୍କିଟ୍ ମଧ୍ୟରେ ପ୍ରବାହିତ ବିଦ୍ୟୁତ୍ ପ୍ରବାହ କେତେ?",
-    "Punjabi": "ਪ੍ਰਸ਼ਨ 1. 4 ਓਮ ਅਤੇ 6 ਓਮ ਦੇ ਦੋ ਪ੍ਰਤੀਰੋਧਕ ਇੱਕ 12V ਬੈਟਰੀ ਨਾਲ ਲੜੀ ਵਿੱਚ ਜੁੜੇ ਹੋਏ ਹਨ। ਸਰਕਟ ਵਿੱਚੋਂ ਲੰਘਣ ਵਾਲਾ ਕਰੰਟ ਕਿੰਨਾ ਹੈ?",
-    "Urdu": "سوال 1. 4 اوہم اور 6 اوہم کے دو مزاحم 12V بیٹری کے ساتھ سیریز میں جڑے ہوئے ہیں۔ سرکٹ سے گزرنے والا کرنٹ کتنا ہے؟"
 }
 
 def _get_font(language: str, size: int) -> ImageFont.FreeTypeFont:
@@ -67,11 +53,50 @@ def _get_font(language: str, size: int) -> ImageFont.FreeTypeFont:
                 continue
     return ImageFont.load_default()
 
-def translate_text_nvidia(question: str, target_lang: str) -> str:
+def extract_text_from_image_nvidia(image_path: str) -> str:
     api_key = os.getenv("NVIDIA_API_KEY")
     base_url = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
     if not api_key:
-        return LOCAL_FALLBACK_QUESTIONS.get(target_lang, question)
+        raise ValueError("NVIDIA_API_KEY environment variable is not set")
+    
+    with open(image_path, "rb") as f:
+        encoded_image = base64.b64encode(f.read()).decode("utf-8")
+        
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    payload = {
+        "model": "meta/llama-3.2-11b-vision-instruct",
+        "messages": [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "Extract all questions and choices from this exam paper image. Output only the extracted exam questions text precisely as written, without any introduction or markdown wrapper."},
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_image}"}}
+                ]
+            }
+        ],
+        "max_tokens": 1024
+    }
+    
+    r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=45.0)
+    if r.status_code != 200:
+        raise RuntimeError(f"NVIDIA Vision NIM returned status {r.status_code}: {r.text}")
+        
+    content = r.json()["choices"][0]["message"]["content"].strip()
+    if not content:
+        raise RuntimeError("NVIDIA Vision NIM returned empty text content")
+    return content
+
+def translate_text_nvidia(text: str, target_lang: str) -> str:
+    api_key = os.getenv("NVIDIA_API_KEY")
+    base_url = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
+    if not api_key:
+        raise ValueError("NVIDIA_API_KEY environment variable is not set")
+    if target_lang == "English":
+        return text
     
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -83,25 +108,23 @@ def translate_text_nvidia(question: str, target_lang: str) -> str:
         "messages": [
             {
                 "role": "user",
-                "content": f"Translate this competitive exam question into {target_lang}. Translate only the question text. Output ONLY the translated text, do not add any explanation, quotes or preamble:\n{question}"
+                "content": f"Translate the following competitive exam questions and options into {target_lang}. Translate accurately. Maintain the layout and formatting (like Q1, Q2, option labels like A, B, C, D). Output ONLY the translated text, do not add any explanation, quotes or preamble:\n{text}"
             }
         ],
         "temperature": 0.1,
-        "max_tokens": 512
+        "max_tokens": 2048
     }
     
-    try:
-        r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=15.0)
-        if r.status_code == 200:
-            result = r.json()["choices"][0]["message"]["content"].strip()
-            if result.startswith('"') and result.endswith('"'):
-                result = result[1:-1]
-            if result.startswith("'") and result.endswith("'"):
-                result = result[1:-1]
-            return result
-    except Exception:
-        pass
-    return LOCAL_FALLBACK_QUESTIONS.get(target_lang, question)
+    r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=35.0)
+    if r.status_code != 200:
+        raise RuntimeError(f"NVIDIA Translation NIM returned status {r.status_code}: {r.text}")
+        
+    result = r.json()["choices"][0]["message"]["content"].strip()
+    if result.startswith('"') and result.endswith('"'):
+        result = result[1:-1]
+    if result.startswith("'") and result.endswith("'"):
+        result = result[1:-1]
+    return result
 
 def render_translated_version(source_path: str, output_path: str, language: str):
     banner_info = LANG_BANNERS.get(language, {"bg": (100, 100, 100), "text": language})
@@ -109,9 +132,33 @@ def render_translated_version(source_path: str, output_path: str, language: str)
 
     banner_h = 48
     metadata_h = 56
-    content_h = 240
-    total_h = banner_h + metadata_h + content_h
     width = 800
+
+    extracted_text = extract_text_from_image_nvidia(source_path)
+    question_text = translate_text_nvidia(extracted_text, language)
+    
+    q_font = _get_font(language, 14)
+    dummy_img = Image.new("RGB", (100, 100))
+    dummy_draw = ImageDraw.Draw(dummy_img)
+
+    raw_lines = question_text.split("\n")
+    wrapped_lines = []
+    for raw_line in raw_lines:
+        words = raw_line.split(" ")
+        current_line = []
+        for word in words:
+            current_line.append(word)
+            line_str = " ".join(current_line)
+            w_bbox = dummy_draw.textbbox((0, 0), line_str, font=q_font)
+            if w_bbox[2] - w_bbox[0] > width - 40:
+                current_line.pop()
+                wrapped_lines.append(" ".join(current_line))
+                current_line = [word]
+        if current_line:
+            wrapped_lines.append(" ".join(current_line))
+
+    content_h = (len(wrapped_lines) * 22) + 60
+    total_h = banner_h + metadata_h + content_h
 
     canvas = Image.new("RGB", (width, total_h), (255, 255, 255))
     draw = ImageDraw.Draw(canvas)
@@ -129,28 +176,10 @@ def render_translated_version(source_path: str, output_path: str, language: str)
     y += 22
     draw.text((16, y), f"{labels['set_label']}: NEET-2025-SET-A   |   {labels['name_label']}: Aarav Sharma   |   {labels['roll_label']}: 2024NEET04521   |   {labels['seat_label']}: A-12", fill=(80, 80, 80), font=meta_font)
 
-    source_question = "Q1. Two resistors of 4 Ohm and 6 Ohm are connected in series with a 12V battery. What is the current through the circuit?"
-    question_text = translate_text_nvidia(source_question, language)
-    q_font = _get_font(language, 15)
-    
-    words = question_text.split(" ")
-    lines = []
-    current_line = []
-    for word in words:
-        current_line.append(word)
-        line_str = " ".join(current_line)
-        w_bbox = draw.textbbox((0, 0), line_str, font=q_font)
-        if w_bbox[2] - w_bbox[0] > width - 40:
-            current_line.pop()
-            lines.append(" ".join(current_line))
-            current_line = [word]
-    if current_line:
-        lines.append(" ".join(current_line))
-        
     y_text = banner_h + metadata_h + 30
-    for line in lines:
+    for line in wrapped_lines:
         draw.text((20, y_text), line, fill=(0, 0, 0), font=q_font)
-        y_text += 25
+        y_text += 22
 
     stamp_font = _get_font(language, 10)
     stamp_text = f"PaperGuard · {language} Version"
