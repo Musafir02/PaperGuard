@@ -36,10 +36,15 @@ EXAM_LABELS = {
 
 def _get_font(language: str, size: int) -> ImageFont.FreeTypeFont:
     paths = []
+    if language in ["Hindi", "Marathi", "Tamil", "Telugu", "Bengali", "Gujarati", "Kannada", "Malayalam", "Odia", "Punjabi"]:
+        paths.append("C:/Windows/Fonts/Nirmala.ttc")
     if language in ["Hindi", "Marathi"]:
         paths.append("C:/Windows/Fonts/mangal.ttf")
         paths.append("C:/Windows/Fonts/kokila.ttf")
         paths.append("C:/Windows/Fonts/utsaah.ttf")
+    if language == "Urdu":
+        paths.append("C:/Windows/Fonts/urdu.ttf")
+        paths.append("C:/Windows/Fonts/tahoma.ttf")
     paths.extend([
         "C:/Windows/Fonts/arial.ttf",
         "C:/Windows/Fonts/segoeui.ttf",
@@ -103,28 +108,35 @@ def translate_text_nvidia(text: str, target_lang: str) -> str:
         "Content-Type": "application/json"
     }
     
-    payload = {
-        "model": "meta/llama-3.1-70b-instruct",
-        "messages": [
-            {
-                "role": "user",
-                "content": f"Translate the following competitive exam questions and options into {target_lang}. Translate accurately. Maintain the layout and formatting (like Q1, Q2, option labels like A, B, C, D). Output ONLY the translated text, do not add any explanation, quotes or preamble:\n{text}"
-            }
-        ],
-        "temperature": 0.1,
-        "max_tokens": 2048
-    }
-    
-    r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=35.0)
-    if r.status_code != 200:
-        raise RuntimeError(f"NVIDIA Translation NIM returned status {r.status_code}: {r.text}")
-        
-    result = r.json()["choices"][0]["message"]["content"].strip()
-    if result.startswith('"') and result.endswith('"'):
-        result = result[1:-1]
-    if result.startswith("'") and result.endswith("'"):
-        result = result[1:-1]
-    return result
+    models = ["meta/llama-3.3-70b-instruct", "meta/llama-3.1-8b-instruct"]
+    last_err = None
+    for model in models:
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": f"Translate the following competitive exam questions and options into {target_lang}. Translate accurately. Maintain the layout and formatting (like Q1, Q2, option labels like A, B, C, D). Output ONLY the translated text, do not add any explanation, quotes or preamble:\n{text}"
+                }
+            ],
+            "temperature": 0.1,
+            "max_tokens": 2048
+        }
+        try:
+            r = httpx.post(f"{base_url}/chat/completions", headers=headers, json=payload, timeout=25.0)
+            if r.status_code == 200:
+                result = r.json()["choices"][0]["message"]["content"].strip()
+                if result.startswith('"') and result.endswith('"'):
+                    result = result[1:-1]
+                if result.startswith("'") and result.endswith("'"):
+                    result = result[1:-1]
+                return result
+            else:
+                last_err = RuntimeError(f"NVIDIA Translation NIM ({model}) returned status {r.status_code}: {r.text}")
+        except Exception as e:
+            last_err = e
+            
+    raise last_err if last_err else RuntimeError("Translation failed for all models")
 
 def render_translated_version(source_path: str, output_path: str, language: str):
     banner_info = LANG_BANNERS.get(language, {"bg": (100, 100, 100), "text": language})
