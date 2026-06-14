@@ -5,10 +5,7 @@ from datetime import datetime
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
-try:
-    from api.models import AuditEvent
-except ImportError:
-    from models import AuditEvent
+from api.models import AuditEvent
 
 SECRET_KEY = os.getenv("AUDIT_HMAC_KEY", "paperguard-audit-secret-2026")
 

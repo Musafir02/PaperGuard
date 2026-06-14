@@ -9,38 +9,24 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-try:
-    from api.database import init_db, get_db
-    from api.models import (
-        Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
-        CenterPhase, RiskLevel, AlertStatus
-    )
-    from api.services.crypto import encrypt_data, decrypt_data
-    from api.services.shamir import split_key, combine_keys
-    from api.services.totp_lock import generate_totp_secret, verify_totp_code
-    from api.services.risk_scorer import calculate_risk_score
-    from api.services.audit_chain import create_audit_event, verify_chain
-    from api.services.watermark import (
-        embed_watermark_dct, decode_watermark_dct,
-        embed_printer_fingerprint, decode_printer_fingerprint
-    )
-    from api.services.translate import render_translated_version
-except ImportError:
-    from database import init_db, get_db
-    from models import (
-        Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
-        CenterPhase, RiskLevel, AlertStatus
-    )
-    from services.crypto import encrypt_data, decrypt_data
-    from services.shamir import split_key, combine_keys
-    from services.totp_lock import generate_totp_secret, verify_totp_code
-    from services.risk_scorer import calculate_risk_score
-    from services.audit_chain import create_audit_event, verify_chain
-    from services.watermark import (
-        embed_watermark_dct, decode_watermark_dct,
-        embed_printer_fingerprint, decode_printer_fingerprint
-    )
-    from services.translate import render_translated_version
+import sys
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from api.database import init_db, get_db
+from api.models import (
+    Center, Student, WatermarkRecord, AuditEvent, Alert, TranslatorAccess,
+    CenterPhase, RiskLevel, AlertStatus
+)
+from api.services.crypto import encrypt_data, decrypt_data
+from api.services.shamir import split_key, combine_keys
+from api.services.totp_lock import generate_totp_secret, verify_totp_code
+from api.services.risk_scorer import calculate_risk_score
+from api.services.audit_chain import create_audit_event, verify_chain
+from api.services.watermark import (
+    embed_watermark_dct, decode_watermark_dct,
+    embed_printer_fingerprint, decode_printer_fingerprint
+)
+from api.services.translate import render_translated_version
 
 UPLOAD_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -76,12 +62,12 @@ async def login(data: dict, db: AsyncSession = Depends(get_db)):
     username = data.get("username")
     role = data.get("role")
     center_id = data.get("center_id")
-    if role == "invigilator" and center_id:
+    if role in ["invigilator", "center_officer"] and center_id:
         result = await db.execute(select(Center).where(Center.id == center_id))
         center = result.scalar_one_or_none()
         if not center or not center.is_active:
             raise HTTPException(status_code=400, detail="Invalid or inactive center")
-    return {"status": "success", "username": username, "role": role, "center_id": center_id}
+    return {"status": "authenticated", "username": username, "role": role, "center_id": center_id}
 
 @app.get("/api/v1/center")
 async def get_centers(db: AsyncSession = Depends(get_db)):

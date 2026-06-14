@@ -3,10 +3,7 @@ from datetime import datetime
 from sqlalchemy import String, Integer, Float, DateTime, Enum, ForeignKey, Text, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-try:
-    from api.database import Base
-except ImportError:
-    from database import Base
+from api.database import Base
 
 class CenterPhase(str, enum.Enum):
     SEALED = "SEALED"
